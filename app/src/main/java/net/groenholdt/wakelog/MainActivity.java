@@ -1,13 +1,14 @@
 package net.groenholdt.wakelog;
 
 import android.content.Intent;
-import android.net.nsd.NsdManager;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -15,14 +16,13 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import net.groenholdt.wakelog.NsdHelper;
-
 public class MainActivity extends AppCompatActivity
 {
-    NsdHelper mNsdHelper;
-
     private static final String TAG = "MainActivity";
-    private WebSocketClient mWebSocketClient;
+    NsdHelper mNsdHelper;
+    private WebSocketClient webSocketClient;
+    private NsdHelper nsdHelper;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -32,8 +32,20 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mNsdHelper = new NsdHelper(this);
-        mNsdHelper.initializeNsd();
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                // Click action
+                //Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
+                //startActivity(intent);
+            }
+        });
+
+        nsdHelper = new NsdHelper(this);
+        nsdHelper.initializeNsd();
     }
 
     @Override
@@ -62,10 +74,43 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_update)
         {
             Log.d(TAG, "Update action.");
+            nsdHelper.discoverServices();
             connectWebSocket();
+        }
+        if (id == R.id.action_mdns)
+        {
+            Log.d(TAG, "MDNS action.");
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPause()
+    {
+        if (nsdHelper != null)
+        {
+            nsdHelper.stopDiscovery();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if (nsdHelper != null)
+        {
+            nsdHelper.discoverServices();
+        }
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        nsdHelper.tearDown();
+        super.onDestroy();
     }
 
     private void connectWebSocket()
@@ -80,7 +125,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        mWebSocketClient = new WebSocketClient(uri)
+        webSocketClient = new WebSocketClient(uri)
         {
             @Override
             public void onOpen(ServerHandshake serverHandshake)
@@ -91,7 +136,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onMessage(String s)
             {
-                final String message = s;
+                //final String message = s;
                 Log.d(TAG, "WebSocket message: " + s);
 
                 runOnUiThread(new Runnable()
@@ -117,6 +162,6 @@ public class MainActivity extends AppCompatActivity
                 Log.e("Websocket", "Error " + e.getMessage());
             }
         };
-        mWebSocketClient.connect();
+        webSocketClient.connect();
     }
 }

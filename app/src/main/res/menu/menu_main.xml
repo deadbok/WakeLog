@@ -3,13 +3,18 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="net.groenholdt.wakelog.MainActivity">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never"/>
-    <item
         android:id="@+id/action_update"
         android:orderInCategory="100"
         android:title="@string/action_update"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_mdns"
+        android:orderInCategory="100"
+        android:title="@string/action_mdns"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
         app:showAsAction="never"/>
 </menu>

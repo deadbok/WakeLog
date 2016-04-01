@@ -1,8 +1,20 @@
 <resources>
     <string name="app_name">Wake Log</string>
+
     <string name="action_settings">Settings</string>
     <string name="action_update">Update</string>
+    <string name="action_mdns">mDNS</string>
+
     <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_mdns">mDNS</string>
+
+    <string name="title_activity_add_device">Add device</string>
+
+    <string name="pref_default_device_name">name</string>
+    <string name="pref_title_device_name">Device name</string>
+
+    <string name="pref_default_device_ssid">Network name</string>
+    <string name="pref_title_device_ssid">ssid</string>
 
     <!-- Strings related to Settings -->
 

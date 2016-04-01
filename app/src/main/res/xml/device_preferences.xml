@@ -1,0 +1,22 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="net.groenholdt.wakelog.DevicePreferencesFragment">
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_device_name"
+        android:inputType="text"
+        android:key="device_name"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_device_name"/>
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_device_ssid"
+        android:inputType="text"
+        android:key="device_ssid"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_device_ssid"/>
+</FrameLayout>
