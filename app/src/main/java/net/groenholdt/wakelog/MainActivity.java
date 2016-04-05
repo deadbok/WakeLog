@@ -3,34 +3,46 @@ package net.groenholdt.wakelog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TabHost;
+
+import net.groenholdt.wakelog.model.Device;
+import net.groenholdt.wakelog.model.LogDatabaseHelper;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
 {
     private static final String TAG = "MainActivity";
-    NsdHelper mNsdHelper;
     private WebSocketClient webSocketClient;
     private NsdHelper nsdHelper;
     private FloatingActionButton fab;
+    private LogDatabaseHelper database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        database = new LogDatabaseHelper(this);
+
+        populateTabHost();
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -38,52 +50,15 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                // Click action
-                //Intent intent = new Intent(MainActivity.this, NewMessageActivity.class);
-                //startActivity(intent);
+                DialogFragment addDeviceDialogFragment =
+                        new AddDeviceDialogFragment();
+                addDeviceDialogFragment
+                        .show(getSupportFragmentManager(), "add_device");
             }
         });
 
         nsdHelper = new NsdHelper(this);
         nsdHelper.initializeNsd();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings)
-        {
-            Intent i = new Intent(this, SettingsActivity.class);
-            startActivity(i);
-            return true;
-        }
-        if (id == R.id.action_update)
-        {
-            Log.d(TAG, "Update action.");
-            nsdHelper.discoverServices();
-            connectWebSocket();
-        }
-        if (id == R.id.action_mdns)
-        {
-            Log.d(TAG, "MDNS action.");
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -113,13 +88,36 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_devices:
+                Intent intent = new Intent(this, DevicesActivity.class);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void connectWebSocket()
     {
         URI uri;
         try
         {
             uri = new URI("ws://wakelog.local:80");
-        } catch (URISyntaxException e)
+        }
+        catch (URISyntaxException e)
         {
             e.printStackTrace();
             return;
@@ -163,5 +161,19 @@ public class MainActivity extends AppCompatActivity
             }
         };
         webSocketClient.connect();
+    }
+
+    private void populateTabHost()
+    {
+        Log.d(TAG, "Populating tabs");
+        TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
+        ArrayList<Device> devices = database.getDevices();
+
+        for (int i = 0; i < devices.size(); i++)
+        {
+            tabHost.addTab(tabHost.newTabSpec("tab_test1")
+                    .setIndicator(devices.get(i).getName()));
+        }
+
     }
 }
