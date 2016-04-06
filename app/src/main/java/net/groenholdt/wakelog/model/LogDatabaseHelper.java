@@ -108,6 +108,7 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
 
     private ArrayList<LogEntry> getLog(long deviceId)
     {
+        Log.d(TAG, "Getting log");
         ArrayList<LogEntry> log = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
 
@@ -138,6 +139,7 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
             logEntry.setDeviceId(device);
 
             log.add(logEntry);
+            Log.d(TAG, "Added \"" + logEntry.toString() + "\"");
         }
 
         logCursor.close();
@@ -172,11 +174,14 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
 
         deviceCursor.close();
 
+        Log.d(TAG, "Getting device \"" + device.toString() + "\"");
+
         return (device);
     }
 
     public ArrayList<Device> getDevices()
     {
+        Log.d(TAG, "Getting list");
         ArrayList<Device> devices = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
 
@@ -200,11 +205,33 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
             device.setLog(getLog(deviceId));
 
             devices.add(device);
+
+            Log.d(TAG, "Added \"" + device.toString() + "\"");
         }
 
         deviceCursor.close();
 
         return (devices);
+    }
+
+    public Cursor getDeviceCursor()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+
+        return (db.query(DeviceContract.TABLE_NAME, null, null, null, null, null, null));
+    }
+
+    public Cursor getLogCursor(long deviceId)
+    {
+        SQLiteDatabase db = getReadableDatabase();
+
+        return (db.query(LogContract.TABLE_NAME,
+                null,
+                LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
+                new String[]{String.valueOf(deviceId)},
+                null,
+                null,
+                LogContract.LogEntry._ID));
     }
 
 }

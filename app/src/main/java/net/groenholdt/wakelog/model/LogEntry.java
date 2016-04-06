@@ -2,6 +2,8 @@ package net.groenholdt.wakelog.model;
 
 /**
  * Created by oblivion on 05/04/16.
+ *
+ * A single log entry.
  */
 public class LogEntry
 {
@@ -53,6 +55,9 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return (Integer.toString(time));
+        return ("Id: " + String.valueOf(id) + ", time: " +
+                        String.valueOf(time) + ", type: " +
+                        String.valueOf(type) + ", device id: " +
+                        String.valueOf(deviceId));
     }
 }

@@ -1,21 +1,18 @@
 package net.groenholdt.wakelog;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.widget.EditText;
-
-import net.groenholdt.wakelog.model.LogDatabaseHelper;
 
 
 public class AddDeviceDialogFragment extends DialogFragment
 {
     private static final String TAG = "AddDeviceDialogFragment";
-    private LogDatabaseHelper database;
+    AddDeviceDialogListener listener;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -24,28 +21,45 @@ public class AddDeviceDialogFragment extends DialogFragment
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        database = new LogDatabaseHelper(getActivity());
-
-        builder.setView(inflater.inflate(R.layout.dialog_add_device, null))
+        builder.setTitle(R.string.title_dialog_add_device).setView(inflater
+                .inflate(R.layout.dialog_add_device, null))
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
                 {
                     public void onClick(DialogInterface dialog, int id)
                     {
-                        // Create new device in database.
-                        EditText name = (EditText) getActivity()
-                                .findViewById(R.id.nameEditText);
-                        Log.d(TAG, "Adding device " + name.toString());
-                        //database.addDevice(name.getText().toString(), 0, 0);
+                        listener.onDialogPositiveClick(AddDeviceDialogFragment.this);
+
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
                 {
                     public void onClick(DialogInterface dialog, int id)
                     {
-                        // User cancelled the dialog
+                        listener.onDialogNegativeClick(AddDeviceDialogFragment.this);
                     }
                 });
-        // Create the AlertDialog object and return it
         return builder.create();
+    }
+
+    @Override
+    public void onAttach(Activity activity)
+    {
+        super.onAttach(activity);
+        try
+        {
+            listener = (AddDeviceDialogListener) activity;
+        }
+        catch (ClassCastException e)
+        {
+            throw new ClassCastException(activity.toString()
+                    + " must implement NoticeDialogListener");
+        }
+    }
+
+    public interface AddDeviceDialogListener
+    {
+        void onDialogPositiveClick(DialogFragment dialog);
+
+        void onDialogNegativeClick(DialogFragment dialog);
     }
 }

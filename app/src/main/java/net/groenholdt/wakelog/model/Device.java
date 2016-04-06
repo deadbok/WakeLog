@@ -64,4 +64,13 @@ public class Device
     {
         this.log = log;
     }
+
+    @Override
+    public String toString()
+    {
+        return ("Id: " + String.valueOf(id) + ", name: " +
+                        String.valueOf(name) + ", IP address: " +
+                        String.valueOf(ipAddr) + ", last sync time: " +
+                        String.valueOf(syncTime));
+    }
 }

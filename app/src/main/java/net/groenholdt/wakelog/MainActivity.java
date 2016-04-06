@@ -1,5 +1,6 @@
 package net.groenholdt.wakelog;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -7,13 +8,12 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.TabHost;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 
-import net.groenholdt.wakelog.model.Device;
 import net.groenholdt.wakelog.model.LogDatabaseHelper;
 
 import org.java_websocket.client.WebSocketClient;
@@ -21,15 +21,15 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements AddDeviceDialogFragment.AddDeviceDialogListener
 {
     private static final String TAG = "MainActivity";
     private WebSocketClient webSocketClient;
     private NsdHelper nsdHelper;
     private FloatingActionButton fab;
     private LogDatabaseHelper database;
+    private SimpleCursorAdapter deviceAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -42,18 +42,43 @@ public class MainActivity extends AppCompatActivity
 
         database = new LogDatabaseHelper(this);
 
-        populateTabHost();
+        deviceAdapter = new SimpleCursorAdapter(this,
+                android.R.layout.simple_list_item_1,
+                database.getDeviceCursor(),
+                new String[]{"name"},
+                new int[]{android.R.id.text1},
+                0);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        ListView listView = (ListView) findViewById(R.id.deviceView);
+        listView.setAdapter(deviceAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int position, long id)
+            {
+                Intent intent =
+                        new Intent(MainActivity.this, LogActivity.class);
+                intent.putExtra("device_id", id);
+
+                Log.d(TAG, "Showing device with id: " + String.valueOf(id));
+
+                startActivity(intent);
+            }
+        });
+
+        FloatingActionButton fab =
+                (FloatingActionButton) findViewById(R.id.fab_add_device);
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                DialogFragment addDeviceDialogFragment =
+                DialogFragment addDeviceDialog =
                         new AddDeviceDialogFragment();
-                addDeviceDialogFragment
+                addDeviceDialog
                         .show(getSupportFragmentManager(), "add_device");
+                deviceAdapter.notifyDataSetChanged();
             }
         });
 
@@ -89,25 +114,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
+    public void onDialogPositiveClick(DialogFragment dialog)
     {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        return true;
+        Dialog d = dialog.getDialog();
+        EditText nameEdit = (EditText) d.findViewById(R.id.nameEditText);
+        if (nameEdit != null)
+        {
+            String name = nameEdit.getText().toString();
+
+            Log.d(TAG, "Adding device " + name);
+            database.addDevice(name, 0, 0);
+        }
+        else
+        {
+            Log.e(TAG, "Could not get device name from UI.");
+        }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
+    public void onDialogNegativeClick(DialogFragment dialog)
     {
-        switch (item.getItemId())
-        {
-            case R.id.action_devices:
-                Intent intent = new Intent(this, DevicesActivity.class);
-                startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     private void connectWebSocket()
@@ -161,19 +187,5 @@ public class MainActivity extends AppCompatActivity
             }
         };
         webSocketClient.connect();
-    }
-
-    private void populateTabHost()
-    {
-        Log.d(TAG, "Populating tabs");
-        TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
-        ArrayList<Device> devices = database.getDevices();
-
-        for (int i = 0; i < devices.size(); i++)
-        {
-            tabHost.addTab(tabHost.newTabSpec("tab_test1")
-                    .setIndicator(devices.get(i).getName()));
-        }
-
     }
 }
