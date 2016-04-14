@@ -27,31 +27,22 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    /**
-     * Creates the underlying database with the SQL_CREATE_TABLE queries from
-     * the contract classes to create the tables and initialize the data.
-     * The onCreate is triggered the first time someone tries to access
-     * the database with the getReadableDatabase or
-     * getWritableDatabase methods.
-     *
-     * @param db the database being accessed and that should be created.
-     */
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        // Create the database to contain the data for the projects
+        // Create the database to contain the data for devices and logs.
         db.execSQL(DeviceContract.SQL_CREATE_TABLE);
         db.execSQL(LogContract.SQL_CREATE_TABLE);
     }
 
     /**
-     * This method must be implemented if your application is upgraded and must
-     * include the SQL query to upgrade the database from your old to your new
-     * schema.
+     * Upgrade an older version of the database.
      *
-     * @param db         the database being upgraded.
-     * @param oldVersion the current version of the database before the upgrade.
-     * @param newVersion the version of the database after the upgrade.
+     * TODO Implement this, preferably without DROPping the old data.
+     *
+     * @param db
+     * @param oldVersion
+     * @param newVersion
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
@@ -61,13 +52,8 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
                 newVersion);
     }
 
-    /**
-     * Add a device.
-     *
-     * @param deviceName mDNS name of the device.
-     * @param ipAddr     Last known IP address of the device.
-     * @param syncTime   Time of last sync.
-     */
+    //Device functions.
+
     public void addDevice(String deviceName, int ipAddr, int syncTime)
     {
         SQLiteDatabase db = getWritableDatabase();
@@ -83,68 +69,37 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
 
         long deviceId =
                 db.insert(DeviceContract.TABLE_NAME, null, deviceValues);
+
+        Log.d(TAG, "Added device with id: " + String.valueOf(deviceId));
     }
 
     /**
-     * Add a log entry.
+     * Remove a device and its log entries.
      *
-     * @param logTime Log time stamp.
-     * @param type    Entry type.
-     * @param device  Log device ID.
+     * @param deviceId Id of the device to remove.
      */
-    public void addLogEntry(String logTime, int type, int device)
+    public void removeDevice(long deviceId)
     {
+        Log.d(TAG, "Remove device with id: " + String.valueOf(deviceId));
         SQLiteDatabase db = getWritableDatabase();
 
-        // Create the database row for the project and keep its unique identifier
-        ContentValues logValues = new ContentValues();
-
-        logValues.put(LogContract.LogEntry.COLUMN_NAME_TIME, logTime);
-        logValues.put(LogContract.LogEntry.COLUMN_NAME_TYPE, type);
-        logValues.put(LogContract.LogEntry.COLUMN_NAME_DEVICE, device);
-
-        long logId = db.insert(LogContract.TABLE_NAME, null, logValues);
-    }
-
-    private ArrayList<LogEntry> getLog(long deviceId)
-    {
-        Log.d(TAG, "Getting log");
-        ArrayList<LogEntry> log = new ArrayList<>();
-        SQLiteDatabase db = getReadableDatabase();
-
-        Cursor logCursor = db.query(LogContract.TABLE_NAME,
-                null,
-                LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
-                new String[]{String.valueOf(deviceId)},
-                null,
-                null,
-                LogContract.LogEntry._ID);
-
-        while (logCursor.moveToNext())
+        int ret = db.delete(DeviceContract.TABLE_NAME,
+                DeviceContract.DeviceEntry._ID + "=?",
+                new String[]{String.valueOf(deviceId)});
+        if (ret < 1)
         {
-            LogEntry logEntry = new LogEntry();
-            logEntry.setId(logCursor.getLong(logCursor
-                    .getColumnIndex(LogContract.LogEntry._ID)));
-
-            int time = logCursor.getInt(logCursor
-                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_TIME));
-            logEntry.setTime(time);
-
-            int type = logCursor.getInt(logCursor
-                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_TYPE));
-            logEntry.setType(type);
-
-            int device = logCursor.getInt(logCursor
-                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_DEVICE));
-            logEntry.setDeviceId(device);
-
-            log.add(logEntry);
-            Log.d(TAG, "Added \"" + logEntry.toString() + "\"");
+            Log.i(TAG, "Device not found");
         }
+        Log.d(TAG, "Deleted " + String.valueOf(ret) + " device(s)");
 
-        logCursor.close();
-
-        return (log);
+        ret = db.delete(LogContract.TABLE_NAME,
+                LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
+                new String[]{String.valueOf(deviceId)});
+        if (ret < 1)
+        {
+            Log.i(TAG, "No log entries found");
+        }
+        Log.d(TAG, "Deleted " + String.valueOf(ret) + " log(s)");
     }
 
     public Device getDevice(long deviceId)
@@ -219,6 +174,70 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         SQLiteDatabase db = getReadableDatabase();
 
         return (db.query(DeviceContract.TABLE_NAME, null, null, null, null, null, null));
+    }
+
+    //Log functions.
+
+    /**
+     * Add a log entry.
+     *
+     * @param logTime Log time stamp.
+     * @param type    Entry type.
+     * @param device  Log device ID.
+     */
+    public void addLogEntry(String logTime, int type, int device)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+
+        // Create the database row for the project and keep its unique identifier
+        ContentValues logValues = new ContentValues();
+
+        logValues.put(LogContract.LogEntry.COLUMN_NAME_TIME, logTime);
+        logValues.put(LogContract.LogEntry.COLUMN_NAME_TYPE, type);
+        logValues.put(LogContract.LogEntry.COLUMN_NAME_DEVICE, device);
+
+        long logId = db.insert(LogContract.TABLE_NAME, null, logValues);
+    }
+
+    private ArrayList<LogEntry> getLog(long deviceId)
+    {
+        Log.d(TAG, "Getting log");
+        ArrayList<LogEntry> log = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor logCursor = db.query(LogContract.TABLE_NAME,
+                null,
+                LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
+                new String[]{String.valueOf(deviceId)},
+                null,
+                null,
+                LogContract.LogEntry._ID);
+
+        while (logCursor.moveToNext())
+        {
+            LogEntry logEntry = new LogEntry();
+            logEntry.setId(logCursor.getLong(logCursor
+                    .getColumnIndex(LogContract.LogEntry._ID)));
+
+            int time = logCursor.getInt(logCursor
+                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_TIME));
+            logEntry.setTime(time);
+
+            int type = logCursor.getInt(logCursor
+                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_TYPE));
+            logEntry.setType(type);
+
+            int device = logCursor.getInt(logCursor
+                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_DEVICE));
+            logEntry.setDeviceId(device);
+
+            log.add(logEntry);
+            Log.d(TAG, "Added \"" + logEntry.toString() + "\"");
+        }
+
+        logCursor.close();
+
+        return (log);
     }
 
     public Cursor getLogCursor(long deviceId)

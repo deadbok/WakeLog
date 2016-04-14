@@ -18,20 +18,21 @@ public class AddDeviceDialogFragment extends DialogFragment
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
         // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder builder =
+                new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        builder.setTitle(R.string.title_dialog_add_device).setView(inflater
-                .inflate(R.layout.dialog_add_device, null))
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
+        builder.setTitle(R.string.title_dialog_add_device);
+        builder.setView(inflater.inflate(R.layout.dialog_add_device, null));
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
                 {
                     public void onClick(DialogInterface dialog, int id)
                     {
+                        //TODO Check input for unwanted characters (spaces, etc.)
                         listener.onDialogPositiveClick(AddDeviceDialogFragment.this);
-
                     }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                });
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
                 {
                     public void onClick(DialogInterface dialog, int id)
                     {

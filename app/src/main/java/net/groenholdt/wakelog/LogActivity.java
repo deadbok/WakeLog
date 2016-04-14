@@ -1,27 +1,33 @@
 package net.groenholdt.wakelog;
 
-import android.app.Dialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 import net.groenholdt.wakelog.model.Device;
 import net.groenholdt.wakelog.model.LogDatabaseHelper;
+import net.groenholdt.wakelog.protocol.DeviceDiscover;
+import net.groenholdt.wakelog.protocol.DeviceDiscoverListener;
+import net.groenholdt.wakelog.protocol.JSONWebSocket;
 
-public class LogActivity extends AppCompatActivity implements AddDeviceDialogFragment.AddDeviceDialogListener
+import java.net.InetAddress;
+
+public class LogActivity extends AppCompatActivity implements DeviceDiscoverListener
 {
     private static final String TAG = "LogActivity";
     private LogDatabaseHelper database;
     private SimpleCursorAdapter logAdapter;
     private Device device;
+    private DeviceDiscover discoverer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -54,6 +60,9 @@ public class LogActivity extends AppCompatActivity implements AddDeviceDialogFra
             listView.setAdapter(logAdapter);
         }
 
+        discoverer = new DeviceDiscover(this, device.getName(), this);
+        discoverer.start();
+
         FloatingActionButton fab =
                 (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -67,27 +76,56 @@ public class LogActivity extends AppCompatActivity implements AddDeviceDialogFra
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog)
+    public boolean onCreateOptionsMenu(Menu menu)
     {
-        Dialog d = dialog.getDialog();
-        EditText nameEdit = (EditText) d.findViewById(R.id.nameEditText);
-        if (nameEdit != null)
-        {
-            String name = nameEdit.getText().toString();
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_log, menu);
+        return (true);
+    }
 
-            Log.d(TAG, "Adding device " + name);
-            database.addDevice(name, 0, 0);
-        }
-        else
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
         {
-            Log.e(TAG, "Could not get device name from UI.");
+            case R.id.device_delete:
+                database.removeDevice(device.getId());
+                //Close this log activity as the device is gone.
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
     @Override
-    public void onDialogNegativeClick(DialogFragment dialog)
+    protected void onPause()
     {
+        discoverer.stop();
+        super.onPause();
     }
 
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        discoverer.start();
+    }
 
+    public void onResolved(InetAddress addr, int port)
+    {
+        JSONWebSocket ws;
+
+        Toast.makeText(this,
+                device.getName() + " found.", Toast.LENGTH_LONG).show();
+
+        ws = new JSONWebSocket();
+        ws.getLog(addr, port);
+    }
+
+    public void onResolveFailed()
+    {
+        Toast.makeText(this,
+                device.getName() + " not found.", Toast.LENGTH_SHORT);
+    }
 }

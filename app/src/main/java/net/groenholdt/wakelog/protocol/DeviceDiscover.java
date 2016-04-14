@@ -14,77 +14,84 @@
  * limitations under the License.
  */
 /*
- * Modified 2016 by Martin Bo Krsitensen Grønholdt.
+ * Modified 2016 by Martin Bo Kristensen Grønholdt.
  *
- * Remove unneeded registration logic.
+ * Remove unneeded registration logic and adapted a litle..
  */
 
-package net.groenholdt.wakelog;
+package net.groenholdt.wakelog.protocol;
 
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-public class NsdHelper
+import java.net.InetAddress;
+
+public class DeviceDiscover
 {
-
+    public static final String TAG = "DeviceDiscover";
     public static final String SERVICE_TYPE = "_iot._tcp.";
-    public static final String TAG = "NsdHelper";
-    public String mServiceName = "wakelog";
-    public boolean running = false;
-    Context mContext;
-    NsdManager mNsdManager;
-    NsdManager.ResolveListener mResolveListener;
-    NsdManager.DiscoveryListener mDiscoveryListener;
-    NsdServiceInfo mService;
+    public String SERVICE_NAME = "localhost";
+    protected NsdManager.DiscoveryListener discoveryListener;
+    protected NsdServiceInfo service;
+    protected DeviceDiscoverListener listener;
+    protected InetAddress address = null;
+    protected int port = 0;
+    private Context context;
+    private NsdManager nsdManager;
+    private NsdManager.ResolveListener resolveListener;
 
-    public NsdHelper(Context context)
+    public DeviceDiscover(Context context, String hostname, DeviceDiscoverListener listener)
     {
-        mContext = context;
-        mNsdManager =
+        this.context = context;
+        nsdManager =
                 (NsdManager) context.getSystemService(Context.NSD_SERVICE);
+
+
+        SERVICE_NAME = hostname;
+        this.listener = listener;
+
+        initialiseDiscoveryListener();
+        initialiseResolveListener();
     }
 
-    public void initializeNsd()
+    protected void initialiseDiscoveryListener()
     {
-        initializeResolveListener();
-        initializeDiscoveryListener();
-
-        //mNsdManager.init(mContext.getMainLooper(), this);
-
-    }
-
-    public void initializeDiscoveryListener()
-    {
-        mDiscoveryListener = new NsdManager.DiscoveryListener()
+        discoveryListener = new NsdManager.DiscoveryListener()
         {
 
             @Override
             public void onDiscoveryStarted(String regType)
             {
                 Log.d(TAG, "Service discovery started");
-                running = true;
             }
 
             @Override
             public void onServiceFound(NsdServiceInfo service)
             {
-                Log.d(TAG, "Service discovery success" + service);
+                Log.i(TAG, "Service discovery success" + service);
                 if (!service.getServiceType().equals(SERVICE_TYPE))
                 {
                     Log.d(TAG, "Service Type: " + service.getServiceType());
                     Log.d(TAG, "Name: " + service.getServiceName());
+                }
+                else if (service.getServiceName().equals(SERVICE_NAME))
+                {
+                    DeviceDiscover.this.service = service;
+                    DeviceDiscover.this.stop();
+                    nsdManager.resolveService(service, resolveListener);
+
                 }
             }
 
             @Override
             public void onServiceLost(NsdServiceInfo service)
             {
-                Log.e(TAG, "service lost" + service);
-                if (mService == service)
+                Log.e(TAG, "Service lost" + service);
+                if (DeviceDiscover.this.service == service)
                 {
-                    mService = null;
+                    DeviceDiscover.this.service = null;
                 }
             }
 
@@ -98,64 +105,77 @@ public class NsdHelper
             public void onStartDiscoveryFailed(String serviceType, int errorCode)
             {
                 Log.e(TAG, "Discovery failed: Error code:" + errorCode);
-                //mNsdManager.stopServiceDiscovery(this);
+                onResolvedFailed();
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode)
             {
                 Log.e(TAG, "Discovery failed: Error code:" + errorCode);
-                //mNsdManager.stopServiceDiscovery(this);
             }
         };
     }
 
-    public void initializeResolveListener()
+    protected void initialiseResolveListener()
     {
-        mResolveListener = new NsdManager.ResolveListener()
+        resolveListener = new NsdManager.ResolveListener()
         {
 
             @Override
             public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode)
             {
                 Log.e(TAG, "Resolve failed" + errorCode);
+                onResolvedFailed();
             }
 
             @Override
             public void onServiceResolved(NsdServiceInfo serviceInfo)
             {
-                Log.e(TAG, "Resolve Succeeded. " + serviceInfo);
+                Log.i(TAG, "Resolve Succeeded. " + serviceInfo);
 
-                if (serviceInfo.getServiceName().equals(mServiceName))
-                {
-                    Log.d(TAG, "Same IP.");
-                    return;
-                }
-                mService = serviceInfo;
+                service = serviceInfo;
+
+                onResolved();
             }
         };
     }
 
-    public void discoverServices()
+    protected void onResolved()
     {
-        mNsdManager.discoverServices(
-                SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+        address = getServiceInfo().getHost();
+        port = getServiceInfo().getPort();
+
+        listener.onResolved(address, port);
     }
 
-    public void stopDiscovery()
+    protected void onResolvedFailed()
     {
-        if (running)
-        {
-            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
-        }
+        listener.onResolveFailed();
     }
 
-    public NsdServiceInfo getChosenServiceInfo()
+    public NsdServiceInfo getServiceInfo()
     {
-        return mService;
+        return service;
     }
 
-    public void tearDown()
+    public void start()
     {
+        nsdManager.discoverServices(
+                SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+    }
+
+    public void stop()
+    {
+        nsdManager.stopServiceDiscovery(discoveryListener);
+    }
+
+    public InetAddress getIP()
+    {
+        return (address);
+    }
+
+    public int getPort()
+    {
+        return (port);
     }
 }

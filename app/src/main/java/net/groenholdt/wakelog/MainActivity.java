@@ -1,10 +1,16 @@
 package net.groenholdt.wakelog;
 
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.SQLException;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -14,22 +20,56 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import net.groenholdt.wakelog.model.DeviceContract;
+import net.groenholdt.wakelog.model.DeviceView;
 import net.groenholdt.wakelog.model.LogDatabaseHelper;
+import net.groenholdt.wakelog.model.LogDatabaseProvider;
 
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-public class MainActivity extends AppCompatActivity implements AddDeviceDialogFragment.AddDeviceDialogListener
+public class MainActivity extends AppCompatActivity
+        implements AddDeviceDialogFragment.AddDeviceDialogListener
 {
     private static final String TAG = "MainActivity";
-    private WebSocketClient webSocketClient;
-    private NsdHelper nsdHelper;
+    private static final int DEVICE_LOADER_ID = 1;
+
     private FloatingActionButton fab;
     private LogDatabaseHelper database;
     private SimpleCursorAdapter deviceAdapter;
+
+    private LoaderManager.LoaderCallbacks<Cursor> deviceLoader =
+            new LoaderManager.LoaderCallbacks<Cursor>()
+            {
+                // Create and return the actual cursor loader for the contacts data
+                @Override
+                public Loader<Cursor> onCreateLoader(int id, Bundle args)
+                {
+                    // Define the columns to retrieve
+                    String[] projection =
+                            {DeviceContract.DeviceEntry._ID, DeviceContract.DeviceEntry.COLUMN_NAME_NAME, DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME};
+                    // Construct the loader
+                    CursorLoader cursorLoader =
+                            new CursorLoader(MainActivity.this,
+                                    LogDatabaseProvider.DEVICE_URI,
+                                    projection,
+                                    null,
+                                    null,
+                                    null
+                            );
+
+                    return cursorLoader;
+                }
+
+                @Override
+                public void onLoadFinished(Loader<Cursor> loader, Cursor cursor)
+                {
+                    deviceAdapter.swapCursor(cursor);
+                }
+
+                @Override
+                public void onLoaderReset(Loader<Cursor> loader)
+                {
+                    deviceAdapter.swapCursor(null);
+                }
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,11 +83,13 @@ public class MainActivity extends AppCompatActivity implements AddDeviceDialogFr
         database = new LogDatabaseHelper(this);
 
         deviceAdapter = new SimpleCursorAdapter(this,
-                android.R.layout.simple_list_item_1,
-                database.getDeviceCursor(),
-                new String[]{"name"},
-                new int[]{android.R.id.text1},
+                R.layout.device_list_item,
+                null,
+                new String[]{DeviceContract.DeviceEntry.COLUMN_NAME_NAME, DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME},
+                new int[]{R.id.device_name, R.id.device_sync_time},
                 0);
+
+        deviceAdapter.setViewBinder(new DeviceView());
 
         ListView listView = (ListView) findViewById(R.id.deviceView);
         listView.setAdapter(deviceAdapter);
@@ -78,38 +120,36 @@ public class MainActivity extends AppCompatActivity implements AddDeviceDialogFr
                         new AddDeviceDialogFragment();
                 addDeviceDialog
                         .show(getSupportFragmentManager(), "add_device");
-                deviceAdapter.notifyDataSetChanged();
             }
         });
 
-        nsdHelper = new NsdHelper(this);
-        nsdHelper.initializeNsd();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        if (nsdHelper != null)
-        {
-            nsdHelper.stopDiscovery();
-        }
-        super.onPause();
+        getSupportLoaderManager()
+                .initLoader(DEVICE_LOADER_ID, null, deviceLoader);
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        if (nsdHelper != null)
+        if (deviceAdapter != null)
         {
-            nsdHelper.discoverServices();
+            deviceAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    protected void onRestart()
+    {
+        super.onRestart();
+        if (deviceAdapter != null)
+        {
+            deviceAdapter.notifyDataSetChanged();
         }
     }
 
     @Override
     protected void onDestroy()
     {
-        nsdHelper.tearDown();
         super.onDestroy();
     }
 
@@ -123,7 +163,23 @@ public class MainActivity extends AppCompatActivity implements AddDeviceDialogFr
             String name = nameEdit.getText().toString();
 
             Log.d(TAG, "Adding device " + name);
-            database.addDevice(name, 0, 0);
+            try
+            {
+                ContentValues deviceValues = new ContentValues();
+
+                deviceValues
+                        .put(DeviceContract.DeviceEntry.COLUMN_NAME_NAME, name);
+                deviceValues.put(DeviceContract.DeviceEntry.COLUMN_NAME_IP, 0);
+                deviceValues
+                        .put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, 0);
+
+                getContentResolver()
+                        .insert(LogDatabaseProvider.DEVICE_URI, deviceValues);
+            }
+            catch (SQLException e)
+            {
+            }
+
         }
         else
         {
@@ -134,58 +190,5 @@ public class MainActivity extends AppCompatActivity implements AddDeviceDialogFr
     @Override
     public void onDialogNegativeClick(DialogFragment dialog)
     {
-    }
-
-    private void connectWebSocket()
-    {
-        URI uri;
-        try
-        {
-            uri = new URI("ws://wakelog.local:80");
-        }
-        catch (URISyntaxException e)
-        {
-            e.printStackTrace();
-            return;
-        }
-
-        webSocketClient = new WebSocketClient(uri)
-        {
-            @Override
-            public void onOpen(ServerHandshake serverHandshake)
-            {
-                Log.d(TAG, "WebSocket opened");
-            }
-
-            @Override
-            public void onMessage(String s)
-            {
-                //final String message = s;
-                Log.d(TAG, "WebSocket message: " + s);
-
-                runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        /*TextView textView = (TextView) findViewById(R.id.messages);
-                        textView.setText(textView.getText() + "\n" + message);*/
-                    }
-                });
-            }
-
-            @Override
-            public void onClose(int i, String s, boolean b)
-            {
-                Log.d(TAG, "WebSocket closed " + s);
-            }
-
-            @Override
-            public void onError(Exception e)
-            {
-                Log.e("Websocket", "Error " + e.getMessage());
-            }
-        };
-        webSocketClient.connect();
     }
 }

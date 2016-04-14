@@ -21,6 +21,7 @@ public final class DeviceContract
             + "FOREIGN KEY (" + DeviceEntry.COLUMN_NAME_LOG + ") "
             + "REFERENCES projects(" + LogContract.LogEntry._ID + "));";
 
+    //BaseColumns supplies _ID and _COUNT entries.
     public static abstract class DeviceEntry implements BaseColumns
     {
         public static final String COLUMN_NAME_NAME = "name";
