@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity
                     // Construct the loader
                     CursorLoader cursorLoader =
                             new CursorLoader(MainActivity.this,
-                                    LogDatabaseProvider.DEVICE_URI,
+                                    LogDatabaseProvider.URI_DEVICE,
                                     projection,
                                     null,
                                     null,
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity
                         .put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, 0);
 
                 getContentResolver()
-                        .insert(LogDatabaseProvider.DEVICE_URI, deviceValues);
+                        .insert(LogDatabaseProvider.URI_DEVICE, deviceValues);
             }
             catch (SQLException e)
             {

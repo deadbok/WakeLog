@@ -136,7 +136,7 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
 
     public ArrayList<Device> getDevices()
     {
-        Log.d(TAG, "Getting list");
+        Log.d(TAG, "Getting device list");
         ArrayList<Device> devices = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
 
@@ -201,7 +201,7 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
 
     private ArrayList<LogEntry> getLog(long deviceId)
     {
-        Log.d(TAG, "Getting log");
+        Log.d(TAG, "Getting logs for device: " + String.valueOf(deviceId));
         ArrayList<LogEntry> log = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
 

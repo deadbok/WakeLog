@@ -20,31 +20,25 @@ public class LogDatabaseProvider extends ContentProvider
 
     public static final String PATH_DEVICES = "devices";
     public static final String PATH_DEVICE = "devices/#";
-    public static final String PATH_DEVICE_NAME = "devices/#/name";
-    public static final String PATH_DEVICE_IP = "devices/#/ip";
-    public static final String PATH_DEVICE_SYNC_TIME = "devices/#/sync_time";
-    public static final Uri DEVICE_URI =
+    public static final Uri URI_DEVICE =
             Uri.parse(SCHEME + AUTHORITY + "/" + PATH_DEVICES);
+
 
     public static final String PATH_LOGS = "logs";
     public static final String PATH_LOG = "logs/#";
-    public static final String PATH_LOG_TIME = "logs/#/time";
-    public static final String PATH_LOG_TYPE = "logs/#/type";
-    public static final String PATH_LOG_DEVICE = "devices/#/device";
-    public static final Uri LOG_URI =
+    public static final String PATH_DEVICE_LOGS = "logs/device/#";
+    public static final Uri URI_LOG =
             Uri.parse(SCHEME + AUTHORITY + "/" + PATH_LOGS);
+    public static final Uri URI_DEVICE_LOGS =
+            Uri.parse(SCHEME + AUTHORITY + "/" + PATH_DEVICE_LOGS);
 
     public static final int URI_CODE_DEVICES = 1;
     public static final int URI_CODE_DEVICE = 2;
-    public static final int URI_CODE_DEVICE_NAME = 3;
-    public static final int URI_CODE_DEVICE_IP = 4;
-    public static final int URI_CODE_DEVICE_SYNC_TIME = 5;
+    public static final int URI_CODE_DEVICE_LOGS = 3;
 
-    public static final int URI_CODE_LOGS = 5;
-    public static final int URI_CODE_LOG = 6;
-    public static final int URI_CODE_LOG_TIME = 7;
-    public static final int URI_CODE_LOG_TYPE = 8;
-    public static final int URI_CODE_LOG_DEVICE = 9;
+    public static final int URI_CODE_LOGS = 4;
+    public static final int URI_CODE_LOG = 5;
+
     private static final UriMatcher uriMatcher =
             new UriMatcher(UriMatcher.NO_MATCH);
     private static HashMap<String, String> values;
@@ -53,24 +47,19 @@ public class LogDatabaseProvider extends ContentProvider
     {
         uriMatcher.addURI(AUTHORITY, PATH_DEVICES, URI_CODE_DEVICES);
         uriMatcher.addURI(AUTHORITY, PATH_DEVICE, URI_CODE_DEVICE);
-        //uriMatcher.addURI(AUTHORITY, PATH_DEVICE_NAME, URI_CODE_DEVICE_NAME);
-        //uriMatcher.addURI(AUTHORITY, PATH_DEVICE_IP, URI_CODE_DEVICE_IP);
-        //uriMatcher.addURI(AUTHORITY, PATH_DEVICE_SYNC_TIME, URI_CODE_DEVICE_SYNC_TIME);
 
         uriMatcher.addURI(AUTHORITY, PATH_LOGS, URI_CODE_LOGS);
         uriMatcher.addURI(AUTHORITY, PATH_LOG, URI_CODE_LOG);
-        //uriMatcher.addURI(AUTHORITY, PATH_LOG_TIME, URI_CODE_LOG_TIME);
-        //uriMatcher.addURI(AUTHORITY, PATH_LOG_TYPE, URI_CODE_LOG_TYPE);
-        //uriMatcher.addURI(AUTHORITY, PATH_LOG_DEVICE, URI_CODE_LOG_DEVICE);
     }
 
     private LogDatabaseHelper dbHelper;
 
+
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs)
+    public boolean onCreate()
     {
-        // Implement this to handle requests to delete one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        dbHelper = new LogDatabaseHelper(getContext());
+        return (dbHelper != null);
     }
 
     @Override
@@ -83,6 +72,8 @@ public class LogDatabaseProvider extends ContentProvider
                 return ("vnd.android.cursor.dir/vnd." + AUTHORITY + ".devices");
             case URI_CODE_DEVICE:
                 return ("vnd.android.cursor.item/vnd." + AUTHORITY + ".device");
+            case URI_CODE_DEVICE_LOGS:
+                return ("vnd.android.cursor.dir/vnd." + AUTHORITY + ".devicelogs");
             case URI_CODE_LOGS:
                 return ("vnd.android.cursor.dir/vnd." + AUTHORITY + ".logs");
             case URI_CODE_LOG:
@@ -93,9 +84,68 @@ public class LogDatabaseProvider extends ContentProvider
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values)
+    public int delete(Uri uri, String selection, String[] selectionArgs)
     {
+        SQLiteDatabase database = dbHelper.getWritableDatabase();
+        int count;
+        String[] id = {};
 
+        int match = uriMatcher.match(uri);
+        switch (match) {
+            case URI_CODE_DEVICES:
+                count = database.delete(DeviceContract.TABLE_NAME, null, null);
+                //Delete all logs while we're at it.
+                database.delete(LogContract.TABLE_NAME, null, null);
+                getContext().getContentResolver()
+                        .notifyChange(URI_DEVICE, null);
+                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                Log.d(TAG, "Deleted all devices and logs");
+                break;
+            case URI_CODE_DEVICE:
+                id[0] = uri.getLastPathSegment();
+                Log.d(TAG, "Deleting device with id: " + id);
+
+                count = database.delete(DeviceContract.TABLE_NAME, "_id = ?", id);
+                Log.d(TAG, "Deleted " + String.valueOf(count) + "device(s)");
+
+                int logs = database.delete(DeviceContract.TABLE_NAME, LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
+                Log.d(TAG, "Deleted " + String.valueOf(logs) + "logs(s)");
+                getContext().getContentResolver()
+                        .notifyChange(URI_DEVICE, null);
+                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                break;
+            case URI_CODE_DEVICE_LOGS:
+                id[0] = uri.getLastPathSegment();
+                Log.d(TAG, "Deleting all logs for device with id: " + id);
+
+                count = database.delete(DeviceContract.TABLE_NAME, LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
+                Log.d(TAG, "Deleted " + String.valueOf(count) + "logs(s)");
+                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                break;
+            case URI_CODE_LOGS:
+                Log.d(TAG, "Delete all logs");
+                count = database.delete(LogContract.TABLE_NAME, null, null);
+                getContext().getContentResolver()
+                        .notifyChange(URI_LOG, null);
+                Log.d(TAG, "Deleted " + String.valueOf(count) + " logs");
+                break;
+            case URI_CODE_LOG:
+                id[0] = uri.getLastPathSegment();
+                Log.d(TAG, "Deleting log with id: " + id);
+
+                count = database.delete(LogContract.TABLE_NAME, "_id = ?", id);
+                Log.d(TAG, "Deleted " + String.valueOf(count) + "logs(s)");
+                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported URI :" + uri.toString());
+        }
+        return (count);
+    }
+
+    @Override
+    public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         long id;
 
@@ -107,21 +157,20 @@ public class LogDatabaseProvider extends ContentProvider
                 values.put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, 0);
                 id = database.insert(DeviceContract.TABLE_NAME, null, values);
                 getContext().getContentResolver()
-                        .notifyChange(DEVICE_URI, null);
+                        .notifyChange(URI_DEVICE, null);
                 Log.d(TAG, "Added device with id: " + String.valueOf(id));
+                break;
+            case URI_CODE_LOGS:
+                id = database.insert(LogContract.TABLE_NAME, null, values);
+                getContext().getContentResolver()
+                        .notifyChange(URI_LOG, null);
+                Log.d(TAG, "Added log entry with id: " + String.valueOf(id));
                 break;
             default:
                 throw new IllegalArgumentException(
                         "Unsupported URI :" + uri.toString());
         }
-        return (ContentUris.withAppendedId(DEVICE_URI, id));
-    }
-
-    @Override
-    public boolean onCreate()
-    {
-        dbHelper = new LogDatabaseHelper(getContext());
-        return (dbHelper != null);
+        return (ContentUris.withAppendedId(URI_DEVICE, id));
     }
 
     @Override
@@ -147,6 +196,8 @@ public class LogDatabaseProvider extends ContentProvider
                         uri.getFragment());
                 Log.d(TAG, "ID: " + uri.getFragment());
                 break;
+            case URI_CODE_DEVICE_LOGS:
+
             case URI_CODE_LOGS:
                 qBuilder.setTables(LogContract.TABLE_NAME);
                 break;
@@ -159,7 +210,6 @@ public class LogDatabaseProvider extends ContentProvider
                 break;
         }
 
-        // Make the query.
         Cursor cursor = qBuilder.query(database,
                 projection,
                 selection,
@@ -176,7 +226,33 @@ public class LogDatabaseProvider extends ContentProvider
                       String[] selectionArgs
     )
     {
-        // TODO: Implement this to handle requests to update one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        SQLiteDatabase database = dbHelper.getWritableDatabase();
+        int count;
+        String[] id = {};
+
+        int match = uriMatcher.match(uri);
+        switch (match) {
+            case URI_CODE_DEVICE:
+                id[0] = uri.getLastPathSegment();
+                Log.d(TAG, "Updating device with id: " + id);
+
+                count = database.update(DeviceContract.TABLE_NAME, values, "_id = ?", id);
+                Log.d(TAG, "Updated " + String.valueOf(count) + "device(s)");
+                getContext().getContentResolver()
+                        .notifyChange(URI_DEVICE, null);
+                break;
+            case URI_CODE_LOG:
+                id[0] = uri.getLastPathSegment();
+                Log.d(TAG, "Updating log with id: " + id);
+
+                count = database.update(LogContract.TABLE_NAME, values, "_id = ?", id);
+                Log.d(TAG, "Updated " + String.valueOf(count) + "logs(s)");
+                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported URI :" + uri.toString());
+        }
+        return (count);
     }
 }

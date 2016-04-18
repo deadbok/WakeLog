@@ -27,6 +27,7 @@ public final class DeviceContract
         public static final String COLUMN_NAME_NAME = "name";
         public static final String COLUMN_NAME_IP = "ip_address";
         public static final String COLUMN_NAME_SYNC_TIME = "sync_time";
+        //TODO Get rid of this column, it is not needed.
         public static final String COLUMN_NAME_LOG = "log";
     }
 }

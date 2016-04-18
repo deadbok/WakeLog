@@ -1,13 +1,21 @@
 package net.groenholdt.wakelog.protocol;
 
+import android.content.Context;
 import android.util.Log;
 
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
+import net.groenholdt.wakelog.model.LogEntry;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+
+import de.tavendo.autobahn.WebSocketConnection;
+import de.tavendo.autobahn.WebSocketException;
+import de.tavendo.autobahn.WebSocketHandler;
 
 /**
  * Created by oblivion on 10/04/16.
@@ -15,49 +23,75 @@ import java.net.URISyntaxException;
 public class JSONWebSocket
 {
     public static final String TAG = "JSONWebSocket";
+    protected static Context context;
+    protected static LogEntryLisentener listener;
+    private final WebSocketConnection webSocketConnection = new WebSocketConnection();
+    protected URI uri;
+    private ArrayList<LogEntry> log = new ArrayList<>();
 
-    protected WebSocketClient webSocketClient;
-
-    public void getLog(InetAddress addr, int port)
+    public JSONWebSocket(Context context, InetAddress address, int port, LogEntryLisentener listener)
     {
-        URI uri;
+        Log.d(TAG, "Creating WebSocket connection.");
+
+        JSONWebSocket.listener = listener;
+
+        JSONWebSocket.context = context;
         try
         {
-            uri = new URI("ws://" + addr.toString() + ":" +
-                    String.valueOf(port));
+            uri = new URI("ws://" + address.getHostAddress() + ":" +
+                    String.valueOf(port) + "/ws");
         }
         catch (URISyntaxException e)
         {
             return;
         }
+        Log.i(TAG, "URI: " + uri.toString());
 
-        webSocketClient = new WebSocketClient(uri)
-        {
-            @Override
-            public void onOpen(ServerHandshake serverHandshake)
+        try {
+            webSocketConnection.connect(uri.toString(), new WebSocketHandler()
             {
-                Log.d(TAG, "WebSocket opened");
-            }
+                @Override
+                public void onOpen() {
+                    Log.d(TAG, "WebSocket opened.");
+                }
 
-            @Override
-            public void onMessage(String s)
-            {
-                final String message = s;
-                Log.d(TAG, "WebSocket message: " + s);
-            }
+                @Override
+                public void onTextMessage(String payload) {
+                    Log.d(TAG, "WebSocket message: " + payload);
+                    try {
+                        JSONArray jsonLog = new JSONArray(payload);
+                        for (int i = 0; i < jsonLog.length(); i++) {
+                            Log.d(TAG, "Adding entry: " + jsonLog.getLong(i));
 
-            @Override
-            public void onClose(int i, String s, boolean b)
-            {
-                Log.d(TAG, "WebSocket closed " + s);
-            }
+                            LogEntry entry = new LogEntry();
+                            entry.setTime((int) jsonLog.getLong(i));
+                            log.add(entry);
+                            JSONWebSocket.listener.onLogEntry(entry);
+                        }
+                    } catch (JSONException e) {
+                        Log.e(TAG, e.getMessage());
+                    }
+                }
 
-            @Override
-            public void onError(Exception e)
-            {
-                Log.e("Websocket", "Error " + e.getMessage());
-            }
-        };
-        webSocketClient.connect();
+                @Override
+                public void onClose(int code, String reason) {
+                    Log.d(TAG, "WebSocket closed: " + reason);
+                }
+            });
+        } catch (WebSocketException e) {
+
+            Log.d(TAG, e.toString());
+        }
+    }
+
+    public void getLog() {
+        if (isOpen()) {
+            Log.i(TAG, "Downloading log from " + uri.toString());
+            webSocketConnection.sendTextMessage("getlog");
+        }
+    }
+
+    public boolean isOpen() {
+        return (webSocketConnection.isConnected());
     }
 }

@@ -28,7 +28,7 @@ import android.util.Log;
 
 import java.net.InetAddress;
 
-public class DeviceDiscover
+public class DeviceDiscover implements NsdManager.ResolveListener
 {
     public static final String TAG = "DeviceDiscover";
     public static final String SERVICE_TYPE = "_iot._tcp.";
@@ -40,7 +40,6 @@ public class DeviceDiscover
     protected int port = 0;
     private Context context;
     private NsdManager nsdManager;
-    private NsdManager.ResolveListener resolveListener;
 
     public DeviceDiscover(Context context, String hostname, DeviceDiscoverListener listener)
     {
@@ -48,12 +47,10 @@ public class DeviceDiscover
         nsdManager =
                 (NsdManager) context.getSystemService(Context.NSD_SERVICE);
 
-
         SERVICE_NAME = hostname;
         this.listener = listener;
 
         initialiseDiscoveryListener();
-        initialiseResolveListener();
     }
 
     protected void initialiseDiscoveryListener()
@@ -70,25 +67,25 @@ public class DeviceDiscover
             @Override
             public void onServiceFound(NsdServiceInfo service)
             {
-                Log.i(TAG, "Service discovery success" + service);
-                if (!service.getServiceType().equals(SERVICE_TYPE))
-                {
-                    Log.d(TAG, "Service Type: " + service.getServiceType());
-                    Log.d(TAG, "Name: " + service.getServiceName());
-                }
-                else if (service.getServiceName().equals(SERVICE_NAME))
-                {
-                    DeviceDiscover.this.service = service;
-                    DeviceDiscover.this.stop();
-                    nsdManager.resolveService(service, resolveListener);
+                Log.i(TAG, "Service discovery success.");
+                Log.d(TAG, "Service Type: " + service.getServiceType());
+                Log.d(TAG, "Name: " + service.getServiceName());
 
+                if (service.getServiceType().equals(SERVICE_TYPE))
+                {
+                    if (service.getServiceName().equals(SERVICE_NAME)) {
+                        DeviceDiscover.this.service = service;
+                        DeviceDiscover.this.stop();
+                        Log.i(TAG, "Found reqeusted service.");
+                        nsdManager.resolveService(service, DeviceDiscover.this);
+                    }
                 }
             }
 
             @Override
             public void onServiceLost(NsdServiceInfo service)
             {
-                Log.e(TAG, "Service lost" + service);
+                Log.e(TAG, "Service lost.");
                 if (DeviceDiscover.this.service == service)
                 {
                     DeviceDiscover.this.service = null;
@@ -105,7 +102,7 @@ public class DeviceDiscover
             public void onStartDiscoveryFailed(String serviceType, int errorCode)
             {
                 Log.e(TAG, "Discovery failed: Error code:" + errorCode);
-                onResolvedFailed();
+                listener.onResolveFailed();
             }
 
             @Override
@@ -116,41 +113,27 @@ public class DeviceDiscover
         };
     }
 
-    protected void initialiseResolveListener()
+    @Override
+    public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode)
     {
-        resolveListener = new NsdManager.ResolveListener()
-        {
-
-            @Override
-            public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode)
-            {
-                Log.e(TAG, "Resolve failed" + errorCode);
-                onResolvedFailed();
-            }
-
-            @Override
-            public void onServiceResolved(NsdServiceInfo serviceInfo)
-            {
-                Log.i(TAG, "Resolve Succeeded. " + serviceInfo);
-
-                service = serviceInfo;
-
-                onResolved();
-            }
-        };
+        Log.e(TAG, "Resolve failed" + errorCode);
+        listener.onResolveFailed();
     }
 
-    protected void onResolved()
+    @Override
+    public void onServiceResolved(NsdServiceInfo serviceInfo)
     {
-        address = getServiceInfo().getHost();
-        port = getServiceInfo().getPort();
+        Log.i(TAG, "Resolve Succeeded. " + serviceInfo);
+        Log.d(TAG, "Name: " + serviceInfo.getServiceName());
+        Log.d(TAG, "Type: " + serviceInfo.getServiceType());
+        Log.d(TAG, "Host: " + serviceInfo.getHost().toString());
+
+        service = serviceInfo;
+
+        address = serviceInfo.getHost();
+        port = serviceInfo.getPort();
 
         listener.onResolved(address, port);
-    }
-
-    protected void onResolvedFailed()
-    {
-        listener.onResolveFailed();
     }
 
     public NsdServiceInfo getServiceInfo()
