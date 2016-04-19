@@ -1,8 +1,10 @@
 package net.groenholdt.wakelog;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
@@ -21,6 +23,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import net.groenholdt.wakelog.model.Device;
+import net.groenholdt.wakelog.model.DeviceContract;
 import net.groenholdt.wakelog.model.LogContract;
 import net.groenholdt.wakelog.model.LogDatabaseHelper;
 import net.groenholdt.wakelog.model.LogDatabaseProvider;
@@ -94,11 +97,13 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
         device = database.getDevice(getIntent().getLongExtra("device_id", 0));
 
         logAdapter = new SimpleCursorAdapter(this,
-                android.R.layout.simple_list_item_1,
+                R.layout.log_list_item,
                 null,
-                new String[]{LogContract.LogEntry.COLUMN_NAME_TIME},
-                new int[]{android.R.id.text1},
+                new String[]{LogContract.LogEntry.COLUMN_NAME_TIME, LogContract.LogEntry.COLUMN_NAME_TYPE},
+                new int[]{R.id.log_time, R.id.log_type},
                 0);
+
+        logAdapter.setViewBinder(new LogView());
 
         ListView listView = (ListView) findViewById(R.id.logView);
         if (logAdapter != null)
@@ -193,16 +198,24 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
     public void onLogEntry(LogEntry entry) {
         Log.d(TAG, "Adding log entry to database: " + entry.toString());
         try {
+
+            //Insert log entry.
             ContentValues logValues = new ContentValues();
 
             logValues
                     .put(LogContract.LogEntry.COLUMN_NAME_TIME, entry.getTime());
             logValues.put(LogContract.LogEntry.COLUMN_NAME_TYPE, entry.getType());
             logValues
-                    .put(LogContract.LogEntry.COLUMN_NAME_DEVICE, getIntent().getLongExtra("device_id", 0));
+                    .put(LogContract.LogEntry.COLUMN_NAME_DEVICE, device.getId());
 
             getContentResolver()
                     .insert(LogDatabaseProvider.URI_LOG, logValues);
+
+            //Update sync time.
+            ContentValues deviceValues = new ContentValues();
+            deviceValues.put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, System.currentTimeMillis());
+            Uri uri = ContentUris.withAppendedId(LogDatabaseProvider.URI_DEVICE, device.getId());
+            getContentResolver().update(uri, deviceValues, null, null);
         } catch (SQLException e) {
         }
     }

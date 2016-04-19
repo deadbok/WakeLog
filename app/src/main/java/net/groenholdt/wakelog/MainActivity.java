@@ -21,7 +21,6 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import net.groenholdt.wakelog.model.DeviceContract;
-import net.groenholdt.wakelog.model.DeviceView;
 import net.groenholdt.wakelog.model.LogDatabaseHelper;
 import net.groenholdt.wakelog.model.LogDatabaseProvider;
 

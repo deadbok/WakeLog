@@ -1,14 +1,14 @@
-package net.groenholdt.wakelog.model;
+package net.groenholdt.wakelog;
 
 import android.database.Cursor;
 import android.view.View;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import net.groenholdt.wakelog.R;
-
 /**
  * Created by oblivion on 08/04/16.
+ *
+ * Replace sync time with never, if never synced.
  */
 public class DeviceView implements SimpleCursorAdapter.ViewBinder
 {
@@ -21,11 +21,11 @@ public class DeviceView implements SimpleCursorAdapter.ViewBinder
                 int time = cursor.getInt(columnIndex);
                 if (time > 0)
                 {
-                    ((TextView) view).setText(String.valueOf(time));
+                    ((TextView) view).setText(new java.util.Date(time).toString());
                 }
                 else
                 {
-                    ((TextView) view).setText("Never");
+                    ((TextView) view).setText(R.string.never);
                 }
                 return true;
         }

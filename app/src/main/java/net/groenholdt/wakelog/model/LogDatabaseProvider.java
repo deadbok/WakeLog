@@ -228,12 +228,11 @@ public class LogDatabaseProvider extends ContentProvider
     {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         int count;
-        String[] id = {};
+        String[] id = {uri.getLastPathSegment()};
 
         int match = uriMatcher.match(uri);
         switch (match) {
             case URI_CODE_DEVICE:
-                id[0] = uri.getLastPathSegment();
                 Log.d(TAG, "Updating device with id: " + id);
 
                 count = database.update(DeviceContract.TABLE_NAME, values, "_id = ?", id);
@@ -242,7 +241,6 @@ public class LogDatabaseProvider extends ContentProvider
                         .notifyChange(URI_DEVICE, null);
                 break;
             case URI_CODE_LOG:
-                id[0] = uri.getLastPathSegment();
                 Log.d(TAG, "Updating log with id: " + id);
 
                 count = database.update(LogContract.TABLE_NAME, values, "_id = ?", id);
