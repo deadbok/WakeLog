@@ -12,4 +12,8 @@
     <string name="title_activity_device">Enheder</string>
     <string name="title_activity_log">Log</string>
     <string name="title_dialog_add_device">Tilføj enhed</string>
+    <string name="action_settings">Indstillinger</string>
+    <string name="action_update">Opdatér</string>
+    <string name="never">Aldrig</string>
+    <string name="invalid_device_name">Ikke gyldigt enhedsnavn</string>
 </resources>

@@ -37,6 +37,7 @@ public class DeviceDiscover implements NsdManager.ResolveListener
     protected NsdServiceInfo service;
     protected DeviceDiscoverListener listener;
     protected InetAddress address = null;
+    protected boolean discovering = false;
     protected int port = 0;
     private Context context;
     private NsdManager nsdManager;
@@ -62,6 +63,7 @@ public class DeviceDiscover implements NsdManager.ResolveListener
             public void onDiscoveryStarted(String regType)
             {
                 Log.d(TAG, "Service discovery started");
+                discovering = true;
             }
 
             @Override
@@ -96,19 +98,20 @@ public class DeviceDiscover implements NsdManager.ResolveListener
             public void onDiscoveryStopped(String serviceType)
             {
                 Log.i(TAG, "Discovery stopped: " + serviceType);
+                discovering = false;
             }
 
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode)
             {
-                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+                Log.e(TAG, "Discovery failed: " + errorCode);
                 listener.onResolveFailed();
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode)
             {
-                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+                Log.e(TAG, "Discovery failed: " + errorCode);
             }
         };
     }
@@ -116,7 +119,7 @@ public class DeviceDiscover implements NsdManager.ResolveListener
     @Override
     public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode)
     {
-        Log.e(TAG, "Resolve failed" + errorCode);
+        Log.e(TAG, "Resolve failed: " + errorCode);
         listener.onResolveFailed();
     }
 
@@ -149,7 +152,9 @@ public class DeviceDiscover implements NsdManager.ResolveListener
 
     public void stop()
     {
-        nsdManager.stopServiceDiscovery(discoveryListener);
+        if (discovering) {
+            nsdManager.stopServiceDiscovery(discoveryListener);
+        }
     }
 
     public InetAddress getIP()

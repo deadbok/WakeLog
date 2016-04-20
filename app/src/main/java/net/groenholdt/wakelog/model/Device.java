@@ -12,7 +12,7 @@ public class Device
     private long id;
     private String name;
     private int ipAddr;
-    private int syncTime;
+    private long syncTime;
     private ArrayList<LogEntry> log = new ArrayList<>();
 
     public long getId()
@@ -45,12 +45,12 @@ public class Device
         this.ipAddr = ipAddr;
     }
 
-    public int getSyncTime()
+    public long getSyncTime()
     {
         return (syncTime);
     }
 
-    public void setSyncTime(int syncTime)
+    public void setSyncTime(long syncTime)
     {
         this.syncTime = syncTime;
     }

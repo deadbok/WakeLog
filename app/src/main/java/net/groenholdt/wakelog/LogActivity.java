@@ -154,8 +154,8 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
         switch (item.getItemId())
         {
             case R.id.device_delete:
-                //TODO use loader
-                database.removeDevice(device.getId());
+                Uri uri = ContentUris.withAppendedId(LogDatabaseProvider.URI_DEVICE, device.getId());
+                getContentResolver().delete(uri, null, null);
                 //Close this log activity as the device is gone.
                 finish();
                 return true;
@@ -203,7 +203,7 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
             ContentValues logValues = new ContentValues();
 
             logValues
-                    .put(LogContract.LogEntry.COLUMN_NAME_TIME, entry.getTime());
+                    .put(LogContract.LogEntry.COLUMN_NAME_TIME, entry.getTime() * 1000);
             logValues.put(LogContract.LogEntry.COLUMN_NAME_TYPE, entry.getType());
             logValues
                     .put(LogContract.LogEntry.COLUMN_NAME_DEVICE, device.getId());
@@ -217,6 +217,7 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
             Uri uri = ContentUris.withAppendedId(LogDatabaseProvider.URI_DEVICE, device.getId());
             getContentResolver().update(uri, deviceValues, null, null);
         } catch (SQLException e) {
+            Log.e(TAG, "Exception: " + e.getMessage());
         }
     }
 }

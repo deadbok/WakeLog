@@ -5,6 +5,8 @@ import android.view.View;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+
 /**
  * Created by oblivion on 08/04/16.
  *
@@ -18,10 +20,10 @@ public class DeviceView implements SimpleCursorAdapter.ViewBinder
         switch (view.getId())
         {
             case R.id.device_sync_time:
-                int time = cursor.getInt(columnIndex);
+                long time = cursor.getLong(columnIndex);
                 if (time > 0)
                 {
-                    ((TextView) view).setText(new java.util.Date(time).toString());
+                    ((TextView) view).setText(DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
                 }
                 else
                 {

@@ -5,6 +5,8 @@ import android.view.View;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+
 /**
  * Created by oblivion on 19/04/16.
  * <p/>
@@ -17,9 +19,9 @@ public class LogView implements SimpleCursorAdapter.ViewBinder {
             case R.id.log_time:
                 long time = cursor.getLong(columnIndex);
                 if (time > 0) {
-                    ((TextView) view).setText(new java.util.Date(time).toString());
+                    ((TextView) view).setText(DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
                 } else {
-                    ((TextView) view).setText("0");
+                    ((TextView) view).setText("Invalid");
                 }
                 return true;
         }

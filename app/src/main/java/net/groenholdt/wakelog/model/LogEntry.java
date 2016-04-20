@@ -8,7 +8,7 @@ package net.groenholdt.wakelog.model;
 public class LogEntry
 {
     private long id;
-    private int time;
+    private long time;
     private int type;
     private int deviceId;
 
@@ -22,12 +22,12 @@ public class LogEntry
         this.id = id;
     }
 
-    public int getTime()
+    public long getTime()
     {
         return (time);
     }
 
-    public void setTime(int time)
+    public void setTime(long time)
     {
         this.time = time;
     }

@@ -88,7 +88,9 @@ public class LogDatabaseProvider extends ContentProvider
     {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         int count;
-        String[] id = {};
+        String[] id = {uri.getLastPathSegment()};
+
+        Log.d(TAG, "Deleting: " + uri.toString());
 
         int match = uriMatcher.match(uri);
         switch (match) {
@@ -102,24 +104,22 @@ public class LogDatabaseProvider extends ContentProvider
                 Log.d(TAG, "Deleted all devices and logs");
                 break;
             case URI_CODE_DEVICE:
-                id[0] = uri.getLastPathSegment();
-                Log.d(TAG, "Deleting device with id: " + id);
+                Log.d(TAG, "Deleting device with id: " + id[0]);
 
                 count = database.delete(DeviceContract.TABLE_NAME, "_id = ?", id);
-                Log.d(TAG, "Deleted " + String.valueOf(count) + "device(s)");
+                Log.d(TAG, "Deleted " + String.valueOf(count) + " device(s)");
 
-                int logs = database.delete(DeviceContract.TABLE_NAME, LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
-                Log.d(TAG, "Deleted " + String.valueOf(logs) + "logs(s)");
+                int logs = database.delete(LogContract.TABLE_NAME, LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
+                Log.d(TAG, "Deleted " + String.valueOf(logs) + " logs(s)");
                 getContext().getContentResolver()
                         .notifyChange(URI_DEVICE, null);
                 getContext().getContentResolver().notifyChange(URI_LOG, null);
                 break;
             case URI_CODE_DEVICE_LOGS:
-                id[0] = uri.getLastPathSegment();
-                Log.d(TAG, "Deleting all logs for device with id: " + id);
+                Log.d(TAG, "Deleting all logs for device with id: " + id[0]);
 
                 count = database.delete(DeviceContract.TABLE_NAME, LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
-                Log.d(TAG, "Deleted " + String.valueOf(count) + "logs(s)");
+                Log.d(TAG, "Deleted " + String.valueOf(count) + " logs(s)");
                 getContext().getContentResolver().notifyChange(URI_LOG, null);
                 break;
             case URI_CODE_LOGS:
@@ -130,11 +130,10 @@ public class LogDatabaseProvider extends ContentProvider
                 Log.d(TAG, "Deleted " + String.valueOf(count) + " logs");
                 break;
             case URI_CODE_LOG:
-                id[0] = uri.getLastPathSegment();
-                Log.d(TAG, "Deleting log with id: " + id);
+                Log.d(TAG, "Deleting log with id: " + id[0]);
 
                 count = database.delete(LogContract.TABLE_NAME, "_id = ?", id);
-                Log.d(TAG, "Deleted " + String.valueOf(count) + "logs(s)");
+                Log.d(TAG, "Deleted " + String.valueOf(count) + " logs(s)");
                 getContext().getContentResolver().notifyChange(URI_LOG, null);
                 break;
             default:

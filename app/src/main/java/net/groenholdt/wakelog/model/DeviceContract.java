@@ -17,7 +17,7 @@ public final class DeviceContract
             + DeviceEntry.COLUMN_NAME_NAME + " TEXT,"
             + DeviceEntry.COLUMN_NAME_IP + " INTEGER DEFAULT 0,"
             + DeviceEntry.COLUMN_NAME_SYNC_TIME + " INTEGER DEFAULT 0,"
-            + DeviceEntry.COLUMN_NAME_LOG + " INTEGER,"
+            //+ DeviceEntry.COLUMN_NAME_LOG + " INTEGER,"
             + "FOREIGN KEY (" + DeviceEntry.COLUMN_NAME_LOG + ") "
             + "REFERENCES projects(" + LogContract.LogEntry._ID + "));";
 
