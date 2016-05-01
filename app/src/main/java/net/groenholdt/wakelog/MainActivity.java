@@ -24,7 +24,6 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import net.groenholdt.wakelog.model.DeviceContract;
-import net.groenholdt.wakelog.model.LogDatabaseHelper;
 import net.groenholdt.wakelog.model.LogDatabaseProvider;
 
 public class MainActivity extends AppCompatActivity
@@ -34,7 +33,6 @@ public class MainActivity extends AppCompatActivity
     private static final int DEVICE_LOADER_ID = 1;
 
     private FloatingActionButton fab;
-    private LogDatabaseHelper database;
     private SimpleCursorAdapter deviceAdapter;
 
     private LoaderManager.LoaderCallbacks<Cursor> deviceLoader =
@@ -81,8 +79,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        database = new LogDatabaseHelper(this);
 
         deviceAdapter = new SimpleCursorAdapter(this,
                 R.layout.device_list_item,

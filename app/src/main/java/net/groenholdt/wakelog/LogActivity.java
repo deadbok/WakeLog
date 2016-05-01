@@ -40,7 +40,6 @@ public class LogActivity extends AppCompatActivity
 {
     private static final String TAG = "LogActivity";
     private static final int LOG_LOADER_ID = 2;
-    private LogDatabaseHelper database;
     private SimpleCursorAdapter logAdapter;
     private Device device;
     private DeviceDiscover discoverer;
@@ -101,7 +100,7 @@ public class LogActivity extends AppCompatActivity
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        database = new LogDatabaseHelper(this);
+        LogDatabaseHelper database = new LogDatabaseHelper(this);
         device = database.getDevice(getIntent().getLongExtra("device_id", 0));
 
         logAdapter = new SimpleCursorAdapter(this,
