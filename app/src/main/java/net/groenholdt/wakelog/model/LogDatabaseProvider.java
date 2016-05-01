@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
-import java.util.HashMap;
+import java.util.Arrays;
 
 public class LogDatabaseProvider extends ContentProvider
 {
@@ -26,22 +26,17 @@ public class LogDatabaseProvider extends ContentProvider
 
     public static final String PATH_LOGS = "logs";
     public static final String PATH_LOG = "logs/#";
-    public static final String PATH_DEVICE_LOGS = "logs/device/#";
     public static final Uri URI_LOG =
             Uri.parse(SCHEME + AUTHORITY + "/" + PATH_LOGS);
-    public static final Uri URI_DEVICE_LOGS =
-            Uri.parse(SCHEME + AUTHORITY + "/" + PATH_DEVICE_LOGS);
 
     public static final int URI_CODE_DEVICES = 1;
     public static final int URI_CODE_DEVICE = 2;
-    public static final int URI_CODE_DEVICE_LOGS = 3;
 
     public static final int URI_CODE_LOGS = 4;
     public static final int URI_CODE_LOG = 5;
 
     private static final UriMatcher uriMatcher =
             new UriMatcher(UriMatcher.NO_MATCH);
-    private static HashMap<String, String> values;
 
     static
     {
@@ -72,8 +67,6 @@ public class LogDatabaseProvider extends ContentProvider
                 return ("vnd.android.cursor.dir/vnd." + AUTHORITY + ".devices");
             case URI_CODE_DEVICE:
                 return ("vnd.android.cursor.item/vnd." + AUTHORITY + ".device");
-            case URI_CODE_DEVICE_LOGS:
-                return ("vnd.android.cursor.dir/vnd." + AUTHORITY + ".devicelogs");
             case URI_CODE_LOGS:
                 return ("vnd.android.cursor.dir/vnd." + AUTHORITY + ".logs");
             case URI_CODE_LOG:
@@ -113,13 +106,6 @@ public class LogDatabaseProvider extends ContentProvider
                 Log.d(TAG, "Deleted " + String.valueOf(logs) + " logs(s)");
                 getContext().getContentResolver()
                         .notifyChange(URI_DEVICE, null);
-                getContext().getContentResolver().notifyChange(URI_LOG, null);
-                break;
-            case URI_CODE_DEVICE_LOGS:
-                Log.d(TAG, "Deleting all logs for device with id: " + id[0]);
-
-                count = database.delete(DeviceContract.TABLE_NAME, LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
-                Log.d(TAG, "Deleted " + String.valueOf(count) + " logs(s)");
                 getContext().getContentResolver().notifyChange(URI_LOG, null);
                 break;
             case URI_CODE_LOGS:
@@ -178,6 +164,8 @@ public class LogDatabaseProvider extends ContentProvider
     )
     {
         Log.d(TAG, "Query: " + uri.toString());
+        Log.d(TAG, "Projection: " + Arrays.toString(projection));
+        Log.d(TAG, "Selection: " + selection);
         SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
         SQLiteDatabase database = dbHelper.getWritableDatabase();
 
@@ -195,8 +183,6 @@ public class LogDatabaseProvider extends ContentProvider
                         uri.getFragment());
                 Log.d(TAG, "ID: " + uri.getFragment());
                 break;
-            case URI_CODE_DEVICE_LOGS:
-
             case URI_CODE_LOGS:
                 qBuilder.setTables(LogContract.TABLE_NAME);
                 break;

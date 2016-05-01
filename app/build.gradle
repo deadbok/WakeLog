@@ -6,9 +6,9 @@ android {
     defaultConfig {
         applicationId "net.groenholdt.wakelog"
         minSdkVersion 16
-        targetSdkVersion 16
+        targetSdkVersion 23
         versionCode 1
-        versionName '0.1.1'
+        versionName '0.1.2'
     }
     buildTypes {
         release {

@@ -30,12 +30,13 @@ import net.groenholdt.wakelog.model.LogDatabaseProvider;
 import net.groenholdt.wakelog.model.LogEntry;
 import net.groenholdt.wakelog.protocol.DeviceDiscover;
 import net.groenholdt.wakelog.protocol.DeviceDiscoverListener;
+import net.groenholdt.wakelog.protocol.JSONWebSockerLisentener;
 import net.groenholdt.wakelog.protocol.JSONWebSocket;
-import net.groenholdt.wakelog.protocol.LogEntryLisentener;
 
 import java.net.InetAddress;
 
-public class LogActivity extends AppCompatActivity implements DeviceDiscoverListener, LogEntryLisentener
+public class LogActivity extends AppCompatActivity
+        implements DeviceDiscoverListener, JSONWebSockerLisentener
 {
     private static final String TAG = "LogActivity";
     private static final int LOG_LOADER_ID = 2;
@@ -46,35 +47,42 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
     private JSONWebSocket ws;
 
     private LoaderManager.LoaderCallbacks<Cursor> logLoader =
-            new LoaderManager.LoaderCallbacks<Cursor>() {
+            new LoaderManager.LoaderCallbacks<Cursor>()
+            {
                 // Create and return the actual cursor loader for the contacts data
                 @Override
-                public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                public Loader<Cursor> onCreateLoader(int id, Bundle args)
+                {
                     // Define the columns to retrieve
                     String[] projection =
-                            {LogContract.LogEntry._ID, LogContract.LogEntry.COLUMN_NAME_TIME, LogContract.LogEntry.COLUMN_NAME_TYPE};
+                            {LogContract.LogEntry._ID, LogContract.LogEntry.COLUMN_NAME_TIME,
+                             LogContract.LogEntry.COLUMN_NAME_TYPE,
+                             LogContract.LogEntry.COLUMN_NAME_DEVICE};
                     // Construct the loader
                     Log.d(TAG, "Creating loader for device id: " +
-                            String.valueOf(args.getLong("device_id", 0)));
+                               String.valueOf(args.getLong("device_id", 0)));
                     CursorLoader cursorLoader =
                             new CursorLoader(LogActivity.this,
-                                    LogDatabaseProvider.URI_LOG,
-                                    projection,
-                                    LogContract.LogEntry.COLUMN_NAME_DEVICE + " = " + args.getLong("device_id", 0),
-                                    null,
-                                    null
+                                             LogDatabaseProvider.URI_LOG,
+                                             projection,
+                                             LogContract.LogEntry.COLUMN_NAME_DEVICE + " = " +
+                                             args.getLong("device_id", 0),
+                                             null,
+                                             null
                             );
 
                     return cursorLoader;
                 }
 
                 @Override
-                public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+                public void onLoadFinished(Loader<Cursor> loader, Cursor cursor)
+                {
                     logAdapter.swapCursor(cursor);
                 }
 
                 @Override
-                public void onLoaderReset(Loader<Cursor> loader) {
+                public void onLoaderReset(Loader<Cursor> loader)
+                {
                     logAdapter.swapCursor(null);
                 }
             };
@@ -97,11 +105,12 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
         device = database.getDevice(getIntent().getLongExtra("device_id", 0));
 
         logAdapter = new SimpleCursorAdapter(this,
-                R.layout.log_list_item,
-                null,
-                new String[]{LogContract.LogEntry.COLUMN_NAME_TIME, LogContract.LogEntry.COLUMN_NAME_TYPE},
-                new int[]{R.id.log_time, R.id.log_type},
-                0);
+                                             R.layout.log_list_item,
+                                             null,
+                                             new String[]{LogContract.LogEntry.COLUMN_NAME_TIME,
+                                                          LogContract.LogEntry.COLUMN_NAME_TYPE},
+                                             new int[]{R.id.log_time, R.id.log_type},
+                                             0);
 
         logAdapter.setViewBinder(new LogView());
 
@@ -111,8 +120,6 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
             listView.setAdapter(logAdapter);
         }
 
-        discoverer = new DeviceDiscover(this, device.getName(), this);
-        discoverer.start();
 
         FloatingActionButton fab =
                 (FloatingActionButton) findViewById(R.id.fab);
@@ -121,18 +128,13 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
             @Override
             public void onClick(View view)
             {
-                if (ws == null) {
-                    Toast.makeText(LogActivity.this, "Not connected.", Toast.LENGTH_SHORT)
-                            .show();
-                    return;
+                if (LogActivity.this.discoverer == null)
+                {
+                    LogActivity.this.discoverer =
+                            new DeviceDiscover(LogActivity.this, device.getName(),
+                                               LogActivity.this);
                 }
-
-                if (ws.isOpen()) {
-                    ws.getLog();
-                } else {
-                    Toast.makeText(LogActivity.this, "Not connected.", Toast.LENGTH_SHORT)
-                            .show();
-                }
+                LogActivity.this.discoverer.start();
             }
         });
 
@@ -154,7 +156,8 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
         switch (item.getItemId())
         {
             case R.id.device_delete:
-                Uri uri = ContentUris.withAppendedId(LogDatabaseProvider.URI_DEVICE, device.getId());
+                Uri uri =
+                        ContentUris.withAppendedId(LogDatabaseProvider.URI_DEVICE, device.getId());
                 getContentResolver().delete(uri, null, null);
                 //Close this log activity as the device is gone.
                 finish();
@@ -167,37 +170,46 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
     @Override
     protected void onPause()
     {
-        discoverer.stop();
+        Log.d(TAG, "Pausing.");
         super.onPause();
     }
 
     @Override
     protected void onResume()
     {
+        Log.d(TAG, "Resuming.");
         super.onResume();
-        discoverer.start();
     }
 
     public void onResolved(InetAddress addr, int port)
     {
+        Log.d(TAG, "Device resolved: " + addr.toString() + ":" + port);
         Toast.makeText(this,
-                device.getName() + " found.", Toast.LENGTH_LONG).show();
+                       device.getName() + " found.", Toast.LENGTH_LONG).show();
+
+        discoverer.stop();
 
         ws = new JSONWebSocket(this, addr, port, this);
-        if (ws.isOpen()) {
-            ws.getLog();
-        }
     }
 
     public void onResolveFailed()
     {
+        Log.d(TAG, "Resolve failed.");
         Toast.makeText(this,
-                device.getName() + " not found.", Toast.LENGTH_SHORT);
+                       device.getName() + " not found.", Toast.LENGTH_SHORT);
     }
 
-    public void onLogEntry(LogEntry entry) {
+    public void onOpen()
+    {
+        Log.i(TAG, "Getting new logs.");
+        ws.getLog();
+    }
+
+    public void onLogEntry(LogEntry entry)
+    {
         Log.d(TAG, "Adding log entry to database: " + entry.toString());
-        try {
+        try
+        {
 
             //Insert log entry.
             ContentValues logValues = new ContentValues();
@@ -213,10 +225,13 @@ public class LogActivity extends AppCompatActivity implements DeviceDiscoverList
 
             //Update sync time.
             ContentValues deviceValues = new ContentValues();
-            deviceValues.put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, System.currentTimeMillis());
+            deviceValues.put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME,
+                             System.currentTimeMillis());
             Uri uri = ContentUris.withAppendedId(LogDatabaseProvider.URI_DEVICE, device.getId());
             getContentResolver().update(uri, deviceValues, null, null);
-        } catch (SQLException e) {
+        }
+        catch (SQLException e)
+        {
             Log.e(TAG, "Exception: " + e.getMessage());
         }
     }

@@ -44,6 +44,7 @@ public class DeviceDiscover implements NsdManager.ResolveListener
 
     public DeviceDiscover(Context context, String hostname, DeviceDiscoverListener listener)
     {
+        Log.d(TAG, "Creating discoverer: " + hostname);
         this.context = context;
         nsdManager =
                 (NsdManager) context.getSystemService(Context.NSD_SERVICE);

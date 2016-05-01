@@ -24,12 +24,13 @@ public class JSONWebSocket
 {
     public static final String TAG = "JSONWebSocket";
     protected static Context context;
-    protected static LogEntryLisentener listener;
+    protected static JSONWebSockerLisentener listener;
     private final WebSocketConnection webSocketConnection = new WebSocketConnection();
     protected URI uri;
     private ArrayList<LogEntry> log = new ArrayList<>();
 
-    public JSONWebSocket(Context context, InetAddress address, int port, LogEntryLisentener listener)
+    public JSONWebSocket(Context context, InetAddress address, int port,
+                         JSONWebSockerLisentener listener)
     {
         Log.d(TAG, "Creating WebSocket connection.");
 
@@ -53,6 +54,7 @@ public class JSONWebSocket
                 @Override
                 public void onOpen() {
                     Log.d(TAG, "WebSocket opened.");
+                    JSONWebSocket.listener.onOpen();
                 }
 
                 @Override
