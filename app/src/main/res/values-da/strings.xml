@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Wake Log</string>
-    <string name="cancel">Annullér</string>
-    <string name="device_default_name">navn</string>
-    <string name="device_default_ssid">netværks navn</string>
     <string name="device_title_name">Enhedsnavn</string>
-    <string name="device_title_ssid">Netværksnavn</string>
-    <string name="menu_title_device_add">Tilføj enhed</string>
     <string name="menu_title_device_remove">Fjern enhed</string>
-    <string name="ok">OK</string>
     <string name="title_activity_device">Enheder</string>
     <string name="title_activity_log">Log</string>
     <string name="title_dialog_add_device">Tilføj enhed</string>
-    <string name="action_settings">Indstillinger</string>
-    <string name="action_update">Opdatér</string>
     <string name="never">Aldrig</string>
     <string name="invalid_device_name">Ikke gyldigt enhedsnavn</string>
+    <string name="text_version">Version</string>
+    <string name="title_dialog_about">Om</string>
+    <string name="version_default">0.0.0</string>
+    <string name="invalid">Ugyldig</string>
 </resources>

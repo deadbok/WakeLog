@@ -196,7 +196,7 @@ public class LogActivity extends AppCompatActivity
     {
         Log.d(TAG, "Resolve failed.");
         Toast.makeText(this,
-                       device.getName() + " not found.", Toast.LENGTH_SHORT);
+                       device.getName() + " not found.", Toast.LENGTH_SHORT).show();
     }
 
     public void onOpen()

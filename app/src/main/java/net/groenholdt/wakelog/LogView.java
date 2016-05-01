@@ -21,7 +21,7 @@ public class LogView implements SimpleCursorAdapter.ViewBinder {
                 if (time > 0) {
                     ((TextView) view).setText(DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
                 } else {
-                    ((TextView) view).setText("Invalid");
+                    ((TextView) view).setText(R.string.invalid);
                 }
                 return true;
         }
