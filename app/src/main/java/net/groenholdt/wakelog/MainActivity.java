@@ -46,16 +46,14 @@ public class MainActivity extends AppCompatActivity
                     String[] projection =
                             {DeviceContract.DeviceEntry._ID, DeviceContract.DeviceEntry.COLUMN_NAME_NAME, DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME};
                     // Construct the loader
-                    CursorLoader cursorLoader =
-                            new CursorLoader(MainActivity.this,
+
+                    return new CursorLoader(MainActivity.this,
                                     LogDatabaseProvider.URI_DEVICE,
                                     projection,
                                     null,
                                     null,
                                     null
-                            );
-
-                    return cursorLoader;
+                    );
                 }
 
                 @Override

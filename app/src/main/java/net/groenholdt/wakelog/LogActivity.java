@@ -60,17 +60,15 @@ public class LogActivity extends AppCompatActivity
                     // Construct the loader
                     Log.d(TAG, "Creating loader for device id: " +
                                String.valueOf(args.getLong("device_id", 0)));
-                    CursorLoader cursorLoader =
-                            new CursorLoader(LogActivity.this,
-                                             LogDatabaseProvider.URI_LOG,
-                                             projection,
-                                             LogContract.LogEntry.COLUMN_NAME_DEVICE + " = " +
-                                             args.getLong("device_id", 0),
-                                             null,
-                                             null
-                            );
 
-                    return cursorLoader;
+                    return new CursorLoader(LogActivity.this,
+                                            LogDatabaseProvider.URI_LOG,
+                                            projection,
+                                            LogContract.LogEntry.COLUMN_NAME_DEVICE + " = " +
+                                            args.getLong("device_id", 0),
+                                            null,
+                                            null
+                    );
                 }
 
                 @Override
