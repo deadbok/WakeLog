@@ -21,4 +21,7 @@
     <string name="action_update">Update</string>
     <string name="never">Never</string>
     <string name="invalid_device_name">Invalid device name</string>
+    <string name="text_version">Version</string>
+    <string name="version_default">0.0.0</string>
+    <string name="title_dialog_about">About</string>
 </resources>
