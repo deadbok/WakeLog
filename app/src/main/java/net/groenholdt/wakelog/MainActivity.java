@@ -32,10 +32,9 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private static final int DEVICE_LOADER_ID = 1;
 
-    private FloatingActionButton fab;
     private SimpleCursorAdapter deviceAdapter;
 
-    private LoaderManager.LoaderCallbacks<Cursor> deviceLoader =
+    private final LoaderManager.LoaderCallbacks<Cursor> deviceLoader =
             new LoaderManager.LoaderCallbacks<Cursor>()
             {
                 // Create and return the actual cursor loader for the contacts data
@@ -171,6 +170,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy()
     {
+        Log.d(TAG, "Destroying.");
         super.onDestroy();
     }
 
@@ -211,5 +211,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onDialogNegativeClick(DialogFragment dialog)
     {
+        Log.d(TAG, "Add dialog dismissed.");
     }
 }

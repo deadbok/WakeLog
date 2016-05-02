@@ -12,7 +12,7 @@ import java.text.DateFormat;
  *
  * Replace sync time with never, if never synced.
  */
-public class DeviceView implements SimpleCursorAdapter.ViewBinder
+class DeviceView implements SimpleCursorAdapter.ViewBinder
 {
     @Override
     public boolean setViewValue(View view, Cursor cursor, int columnIndex)

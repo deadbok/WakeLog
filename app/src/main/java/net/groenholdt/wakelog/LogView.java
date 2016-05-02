@@ -12,7 +12,8 @@ import java.text.DateFormat;
  * <p/>
  * Convert unix time to human readable time.
  */
-public class LogView implements SimpleCursorAdapter.ViewBinder {
+class LogView implements SimpleCursorAdapter.ViewBinder
+{
     @Override
     public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
         switch (view.getId()) {

@@ -14,12 +14,13 @@ import java.util.ArrayList;
  * <p/>
  * Great tutorial at: http://blog.cindypotvin.com/saving-to-a-sqlite-database-in-your-android-application/
  */
+@SuppressWarnings("unused")
 public class LogDatabaseHelper extends SQLiteOpenHelper
 {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 1;
     // The name of the database file on the file system
-    public static final String DATABASE_NAME = "log.db";
+    private static final String DATABASE_NAME = "log.db";
     private static final String TAG = "LogDatabaseHelper";
 
     public LogDatabaseHelper(Context context)

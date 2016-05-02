@@ -12,6 +12,7 @@ import android.util.Log;
 
 import java.util.Arrays;
 
+@SuppressWarnings("WeakerAccess")
 public class LogDatabaseProvider extends ContentProvider
 {
     public static final String TAG = "LogDatabaseProvider";

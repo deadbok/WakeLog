@@ -41,11 +41,7 @@ public class LogActivity extends AppCompatActivity
     private static final String TAG = "LogActivity";
     private static final int LOG_LOADER_ID = 2;
     private SimpleCursorAdapter logAdapter;
-    private Device device;
-    private DeviceDiscover discoverer;
-    private JSONWebSocket ws;
-
-    private LoaderManager.LoaderCallbacks<Cursor> logLoader =
+    private final LoaderManager.LoaderCallbacks<Cursor> logLoader =
             new LoaderManager.LoaderCallbacks<Cursor>()
             {
                 // Create and return the actual cursor loader for the contacts data
@@ -83,6 +79,9 @@ public class LogActivity extends AppCompatActivity
                     logAdapter.swapCursor(null);
                 }
             };
+    private Device device;
+    private DeviceDiscover discoverer;
+    private JSONWebSocket ws;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -186,7 +185,7 @@ public class LogActivity extends AppCompatActivity
 
         discoverer.stop();
 
-        ws = new JSONWebSocket(this, addr, port, this);
+        ws = new JSONWebSocket(addr, port, this);
     }
 
     public void onResolveFailed()

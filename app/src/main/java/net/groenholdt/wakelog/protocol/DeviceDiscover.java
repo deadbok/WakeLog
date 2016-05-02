@@ -30,16 +30,14 @@ import java.net.InetAddress;
 
 public class DeviceDiscover implements NsdManager.ResolveListener
 {
-    public static final String TAG = "DeviceDiscover";
-    public static final String SERVICE_TYPE = "_iot._tcp.";
-    public String SERVICE_NAME = "localhost";
-    protected NsdManager.DiscoveryListener discoveryListener;
-    protected NsdServiceInfo service;
-    protected DeviceDiscoverListener listener;
-    protected InetAddress address = null;
-    protected boolean discovering = false;
-    protected int port = 0;
-    private NsdManager nsdManager;
+    private static final String TAG = "DeviceDiscover";
+    private static final String SERVICE_TYPE = "_iot._tcp.";
+    private final DeviceDiscoverListener listener;
+    private final NsdManager nsdManager;
+    private String SERVICE_NAME = "localhost";
+    private NsdManager.DiscoveryListener discoveryListener;
+    private NsdServiceInfo service;
+    private boolean discovering = false;
 
     public DeviceDiscover(Context context, String hostname, DeviceDiscoverListener listener)
     {
@@ -53,7 +51,7 @@ public class DeviceDiscover implements NsdManager.ResolveListener
         initialiseDiscoveryListener();
     }
 
-    protected void initialiseDiscoveryListener()
+    private void initialiseDiscoveryListener()
     {
         discoveryListener = new NsdManager.DiscoveryListener()
         {
@@ -132,15 +130,10 @@ public class DeviceDiscover implements NsdManager.ResolveListener
 
         service = serviceInfo;
 
-        address = serviceInfo.getHost();
-        port = serviceInfo.getPort();
+        InetAddress address = serviceInfo.getHost();
+        int port = serviceInfo.getPort();
 
         listener.onResolved(address, port);
-    }
-
-    public NsdServiceInfo getServiceInfo()
-    {
-        return service;
     }
 
     public void start()
@@ -156,13 +149,4 @@ public class DeviceDiscover implements NsdManager.ResolveListener
         }
     }
 
-    public InetAddress getIP()
-    {
-        return (address);
-    }
-
-    public int getPort()
-    {
-        return (port);
-    }
 }

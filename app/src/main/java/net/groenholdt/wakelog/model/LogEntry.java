@@ -5,6 +5,7 @@ package net.groenholdt.wakelog.model;
  *
  * A single log entry.
  */
+@SuppressWarnings("unused")
 public class LogEntry
 {
     private long id;

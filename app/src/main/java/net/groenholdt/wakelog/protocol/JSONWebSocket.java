@@ -1,6 +1,5 @@
 package net.groenholdt.wakelog.protocol;
 
-import android.content.Context;
 import android.util.Log;
 
 import net.groenholdt.wakelog.model.LogEntry;
@@ -11,7 +10,6 @@ import org.json.JSONException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
@@ -22,21 +20,18 @@ import de.tavendo.autobahn.WebSocketHandler;
  */
 public class JSONWebSocket
 {
-    public static final String TAG = "JSONWebSocket";
-    protected static Context context;
-    protected static JSONWebSockerLisentener listener;
+    private static final String TAG = "JSONWebSocket";
+    private static JSONWebSockerLisentener listener;
     private final WebSocketConnection webSocketConnection = new WebSocketConnection();
-    protected URI uri;
-    private ArrayList<LogEntry> log = new ArrayList<>();
+    private URI uri;
 
-    public JSONWebSocket(Context context, InetAddress address, int port,
+    public JSONWebSocket(InetAddress address, int port,
                          JSONWebSockerLisentener listener)
     {
         Log.d(TAG, "Creating WebSocket connection.");
 
         JSONWebSocket.listener = listener;
 
-        JSONWebSocket.context = context;
         try
         {
             uri = new URI("ws://" + address.getHostAddress() + ":" +
@@ -67,7 +62,6 @@ public class JSONWebSocket
 
                             LogEntry entry = new LogEntry();
                             entry.setTime((int) jsonLog.getLong(i));
-                            log.add(entry);
                             JSONWebSocket.listener.onLogEntry(entry);
                         }
                     } catch (JSONException e) {
@@ -93,6 +87,7 @@ public class JSONWebSocket
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public boolean isOpen() {
         return (webSocketConnection.isConnected());
     }

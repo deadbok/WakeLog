@@ -7,14 +7,12 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.widget.Button;
 import android.widget.TextView;
 
 
 public class AboutDialogFragment extends DialogFragment
 {
     private static final String TAG = "AddDeviceDialogFragment";
-    private static Button positiveButton;
     private static TextView versionLabel;
 
     @Override
@@ -51,7 +49,8 @@ public class AboutDialogFragment extends DialogFragment
         return (dialog);
     }
 
-    void onDialogPositiveClick(DialogFragment dialog)
+    @SuppressWarnings("UnusedParameters")
+    private void onDialogPositiveClick(DialogFragment dialog)
     {
         Log.d(TAG, "About dialog dismissed.");
     }

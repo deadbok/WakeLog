@@ -35,6 +35,7 @@ public class Device
         this.name = name;
     }
 
+    @SuppressWarnings("unused")
     public int getIpAddr()
     {
         return (ipAddr);
@@ -45,6 +46,7 @@ public class Device
         this.ipAddr = ipAddr;
     }
 
+    @SuppressWarnings("unused")
     public long getSyncTime()
     {
         return (syncTime);
@@ -55,6 +57,7 @@ public class Device
         this.syncTime = syncTime;
     }
 
+    @SuppressWarnings("unused")
     public ArrayList<LogEntry> getLog()
     {
         return (log);
