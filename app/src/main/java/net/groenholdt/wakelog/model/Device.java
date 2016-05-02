@@ -11,7 +11,7 @@ public class Device
 {
     private long id;
     private String name;
-    private int ipAddr;
+    private int ipAddress;
     private long syncTime;
     private ArrayList<LogEntry> log = new ArrayList<>();
 
@@ -36,14 +36,14 @@ public class Device
     }
 
     @SuppressWarnings("unused")
-    public int getIpAddr()
+    public int getIpAddress()
     {
-        return (ipAddr);
+        return (ipAddress);
     }
 
-    public void setIpAddr(int ipAddr)
+    public void setIpAddress(int ipAddress)
     {
-        this.ipAddr = ipAddr;
+        this.ipAddress = ipAddress;
     }
 
     @SuppressWarnings("unused")
@@ -72,8 +72,8 @@ public class Device
     public String toString()
     {
         return ("Id: " + String.valueOf(id) + ", name: " +
-                        String.valueOf(name) + ", IP address: " +
-                        String.valueOf(ipAddr) + ", last sync time: " +
-                        String.valueOf(syncTime));
+                String.valueOf(name) + ", IP address: " +
+                String.valueOf(ipAddress) + ", last sync time: " +
+                String.valueOf(syncTime));
     }
 }

@@ -25,7 +25,8 @@ public class AddDeviceDialogFragment extends DialogFragment implements TextWatch
     private AddDeviceDialogListener listener;
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public Dialog onCreateDialog(Bundle savedInstanceState)
+    {
         Log.d(TAG, "Creating add device dialog.");
         // Use the Builder class for convenient dialog construction
         final AlertDialog.Builder builder =
@@ -34,22 +35,28 @@ public class AddDeviceDialogFragment extends DialogFragment implements TextWatch
 
         builder.setTitle(R.string.title_dialog_add_device);
         builder.setView(inflater.inflate(R.layout.dialog_add_device, null));
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int id)
+            {
                 listener.onDialogPositiveClick(AddDeviceDialogFragment.this);
             }
         });
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int id)
+            {
                 listener.onDialogNegativeClick(AddDeviceDialogFragment.this);
             }
         });
 
         Dialog dialog = builder.create();
 
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+        dialog.setOnShowListener(new DialogInterface.OnShowListener()
+        {
             @Override
-            public void onShow(DialogInterface dialog) {
+            public void onShow(DialogInterface dialog)
+            {
                 nameEdit = (EditText) ((AlertDialog) dialog).findViewById(R.id.nameEditText);
                 nameEdit.addTextChangedListener(AddDeviceDialogFragment.this);
 
@@ -66,15 +73,19 @@ public class AddDeviceDialogFragment extends DialogFragment implements TextWatch
     public void onAttach(Activity activity)
     {
         super.onAttach(activity);
-        try {
+        try
+        {
             listener = (AddDeviceDialogListener) activity;
-        } catch (ClassCastException e) {
+        }
+        catch (ClassCastException e)
+        {
             throw new ClassCastException(activity.toString()
-                    + " must implement NoticeDialogListener");
+                                         + " must implement NoticeDialogListener");
         }
     }
 
-    private boolean isValidHost(String host) {
+    private boolean isValidHost(String host)
+    {
         String EMAIL_PATTERN = "^[_A-Za-z0-9]+";
 
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
@@ -89,7 +100,8 @@ public class AddDeviceDialogFragment extends DialogFragment implements TextWatch
         {
             positiveButton.setEnabled(true);
             nameEdit.setError(null, null);
-        } else
+        }
+        else
         {
             positiveButton.setEnabled(false);
             nameEdit.setError(getString(R.string.invalid_device_name));
@@ -97,10 +109,12 @@ public class AddDeviceDialogFragment extends DialogFragment implements TextWatch
     }
 
     @Override
-    final public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Don't care */ }
+    final public void beforeTextChanged(CharSequence s, int start, int count, int after)
+    { /* Don't care */ }
 
     @Override
-    final public void onTextChanged(CharSequence s, int start, int before, int count) { /* Don't care */ }
+    final public void onTextChanged(CharSequence s, int start, int before, int count)
+    { /* Don't care */ }
 
     public interface AddDeviceDialogListener
     {

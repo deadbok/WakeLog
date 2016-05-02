@@ -2,7 +2,7 @@ package net.groenholdt.wakelog.model;
 
 /**
  * Created by oblivion on 05/04/16.
- *
+ * <p/>
  * A single log entry.
  */
 @SuppressWarnings("unused")
@@ -57,8 +57,8 @@ public class LogEntry
     public String toString()
     {
         return ("Id: " + String.valueOf(id) + ", time: " +
-                        String.valueOf(time) + ", type: " +
-                        String.valueOf(type) + ", device id: " +
-                        String.valueOf(deviceId));
+                String.valueOf(time) + ", type: " +
+                String.valueOf(type) + ", device id: " +
+                String.valueOf(deviceId));
     }
 }

@@ -87,13 +87,14 @@ public class LogDatabaseProvider extends ContentProvider
         Log.d(TAG, "Deleting: " + uri.toString());
 
         int match = uriMatcher.match(uri);
-        switch (match) {
+        switch (match)
+        {
             case URI_CODE_DEVICES:
                 count = database.delete(DeviceContract.TABLE_NAME, null, null);
                 //Delete all logs while we're at it.
                 database.delete(LogContract.TABLE_NAME, null, null);
                 getContext().getContentResolver()
-                        .notifyChange(URI_DEVICE, null);
+                            .notifyChange(URI_DEVICE, null);
                 getContext().getContentResolver().notifyChange(URI_LOG, null);
                 Log.d(TAG, "Deleted all devices and logs");
                 break;
@@ -103,17 +104,18 @@ public class LogDatabaseProvider extends ContentProvider
                 count = database.delete(DeviceContract.TABLE_NAME, "_id = ?", id);
                 Log.d(TAG, "Deleted " + String.valueOf(count) + " device(s)");
 
-                int logs = database.delete(LogContract.TABLE_NAME, LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
+                int logs = database.delete(LogContract.TABLE_NAME,
+                                           LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
                 Log.d(TAG, "Deleted " + String.valueOf(logs) + " logs(s)");
                 getContext().getContentResolver()
-                        .notifyChange(URI_DEVICE, null);
+                            .notifyChange(URI_DEVICE, null);
                 getContext().getContentResolver().notifyChange(URI_LOG, null);
                 break;
             case URI_CODE_LOGS:
                 Log.d(TAG, "Delete all logs");
                 count = database.delete(LogContract.TABLE_NAME, null, null);
                 getContext().getContentResolver()
-                        .notifyChange(URI_LOG, null);
+                            .notifyChange(URI_LOG, null);
                 Log.d(TAG, "Deleted " + String.valueOf(count) + " logs");
                 break;
             case URI_CODE_LOG:
@@ -131,7 +133,8 @@ public class LogDatabaseProvider extends ContentProvider
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(Uri uri, ContentValues values)
+    {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         long id;
 
@@ -143,13 +146,13 @@ public class LogDatabaseProvider extends ContentProvider
                 values.put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, 0);
                 id = database.insert(DeviceContract.TABLE_NAME, null, values);
                 getContext().getContentResolver()
-                        .notifyChange(URI_DEVICE, null);
+                            .notifyChange(URI_DEVICE, null);
                 Log.d(TAG, "Added device with id: " + String.valueOf(id));
                 break;
             case URI_CODE_LOGS:
                 id = database.insert(LogContract.TABLE_NAME, null, values);
                 getContext().getContentResolver()
-                        .notifyChange(URI_LOG, null);
+                            .notifyChange(URI_LOG, null);
                 Log.d(TAG, "Added log entry with id: " + String.valueOf(id));
                 break;
             default:
@@ -162,7 +165,7 @@ public class LogDatabaseProvider extends ContentProvider
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder
-    )
+                       )
     {
         Log.d(TAG, "Query: " + uri.toString());
         Log.d(TAG, "Projection: " + Arrays.toString(projection));
@@ -181,7 +184,7 @@ public class LogDatabaseProvider extends ContentProvider
                 //TODO sanitise input.
                 //http://developer.android.com/guide/topics/providers/content-provider-basics.html#Injection
                 qBuilder.appendWhere(DeviceContract.DeviceEntry._ID + "=" +
-                        uri.getFragment());
+                                     uri.getFragment());
                 Log.d(TAG, "ID: " + uri.getFragment());
                 break;
             case URI_CODE_LOGS:
@@ -197,12 +200,12 @@ public class LogDatabaseProvider extends ContentProvider
         }
 
         Cursor cursor = qBuilder.query(database,
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                sortOrder);
+                                       projection,
+                                       selection,
+                                       selectionArgs,
+                                       null,
+                                       null,
+                                       sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
     }
@@ -210,24 +213,25 @@ public class LogDatabaseProvider extends ContentProvider
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs
-    )
+                     )
     {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         int count;
         String[] id = {uri.getLastPathSegment()};
 
         int match = uriMatcher.match(uri);
-        switch (match) {
+        switch (match)
+        {
             case URI_CODE_DEVICE:
-                Log.d(TAG, "Updating device with id: " + id);
+                Log.d(TAG, "Updating device with id: " + id[0]);
 
                 count = database.update(DeviceContract.TABLE_NAME, values, "_id = ?", id);
                 Log.d(TAG, "Updated " + String.valueOf(count) + "device(s)");
                 getContext().getContentResolver()
-                        .notifyChange(URI_DEVICE, null);
+                            .notifyChange(URI_DEVICE, null);
                 break;
             case URI_CODE_LOG:
-                Log.d(TAG, "Updating log with id: " + id);
+                Log.d(TAG, "Updating log with id: " + id[0]);
 
                 count = database.update(LogContract.TABLE_NAME, values, "_id = ?", id);
                 Log.d(TAG, "Updated " + String.valueOf(count) + "logs(s)");

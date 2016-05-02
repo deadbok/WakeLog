@@ -9,7 +9,7 @@ import java.text.DateFormat;
 
 /**
  * Created by oblivion on 08/04/16.
- *
+ * <p/>
  * Replace sync time with never, if never synced.
  */
 class DeviceView implements SimpleCursorAdapter.ViewBinder
@@ -23,7 +23,8 @@ class DeviceView implements SimpleCursorAdapter.ViewBinder
                 long time = cursor.getLong(columnIndex);
                 if (time > 0)
                 {
-                    ((TextView) view).setText(DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
+                    ((TextView) view).setText(
+                            DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
                 }
                 else
                 {

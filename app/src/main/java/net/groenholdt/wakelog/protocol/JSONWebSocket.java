@@ -17,16 +17,18 @@ import de.tavendo.autobahn.WebSocketHandler;
 
 /**
  * Created by oblivion on 10/04/16.
+ * <p/>
+ * Device communication using JSON over WebSockets.
  */
 public class JSONWebSocket
 {
     private static final String TAG = "JSONWebSocket";
-    private static JSONWebSockerLisentener listener;
+    private static JSONWebSocketListener listener;
     private final WebSocketConnection webSocketConnection = new WebSocketConnection();
     private URI uri;
 
     public JSONWebSocket(InetAddress address, int port,
-                         JSONWebSockerLisentener listener)
+                         JSONWebSocketListener listener)
     {
         Log.d(TAG, "Creating WebSocket connection.");
 
@@ -35,7 +37,7 @@ public class JSONWebSocket
         try
         {
             uri = new URI("ws://" + address.getHostAddress() + ":" +
-                    String.valueOf(port) + "/ws");
+                          String.valueOf(port) + "/ws");
         }
         catch (URISyntaxException e)
         {
@@ -43,52 +45,72 @@ public class JSONWebSocket
         }
         Log.i(TAG, "URI: " + uri.toString());
 
-        try {
+        try
+        {
             webSocketConnection.connect(uri.toString(), new WebSocketHandler()
             {
                 @Override
-                public void onOpen() {
+                public void onOpen()
+                {
                     Log.d(TAG, "WebSocket opened.");
                     JSONWebSocket.listener.onOpen();
                 }
 
                 @Override
-                public void onTextMessage(String payload) {
+                public void onTextMessage(String payload)
+                {
                     Log.d(TAG, "WebSocket message: " + payload);
-                    try {
+                    try
+                    {
                         JSONArray jsonLog = new JSONArray(payload);
-                        for (int i = 0; i < jsonLog.length(); i++) {
+                        for (int i = 0; i < jsonLog.length(); i++)
+                        {
                             Log.d(TAG, "Adding entry: " + jsonLog.getLong(i));
 
                             LogEntry entry = new LogEntry();
                             entry.setTime((int) jsonLog.getLong(i));
                             JSONWebSocket.listener.onLogEntry(entry);
                         }
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e)
+                    {
                         Log.e(TAG, e.getMessage());
                     }
                 }
 
                 @Override
-                public void onClose(int code, String reason) {
+                public void onClose(int code, String reason)
+                {
                     Log.d(TAG, "WebSocket closed: " + reason);
                 }
             });
-        } catch (WebSocketException e) {
+        }
+        catch (WebSocketException e)
+        {
 
             Log.d(TAG, e.toString());
         }
     }
 
-    public void getLog() {
-        if (isOpen()) {
+    public void getLog()
+    {
+        if (isOpen())
+        {
             Log.i(TAG, "Downloading log from " + uri.toString());
             webSocketConnection.sendTextMessage("getlog");
         }
     }
 
     @SuppressWarnings("WeakerAccess")
-    public boolean isOpen() {
+    public boolean isOpen()
+    {
         return (webSocketConnection.isConnected());
+    }
+
+    public interface JSONWebSocketListener
+    {
+        void onOpen();
+
+        void onLogEntry(LogEntry entry);
     }
 }

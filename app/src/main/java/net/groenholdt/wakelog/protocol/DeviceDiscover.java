@@ -16,7 +16,7 @@
 /*
  * Modified 2016 by Martin Bo Kristensen Grønholdt.
  *
- * Remove unneeded registration logic and adapted a litle..
+ * Remove unneeded registration logic and adapted a little..
  */
 
 package net.groenholdt.wakelog.protocol;
@@ -72,10 +72,11 @@ public class DeviceDiscover implements NsdManager.ResolveListener
 
                 if (service.getServiceType().equals(SERVICE_TYPE))
                 {
-                    if (service.getServiceName().equals(SERVICE_NAME)) {
+                    if (service.getServiceName().equals(SERVICE_NAME))
+                    {
                         DeviceDiscover.this.service = service;
                         DeviceDiscover.this.stop();
-                        Log.i(TAG, "Found reqeusted service.");
+                        Log.i(TAG, "Found requested service.");
                         nsdManager.resolveService(service, DeviceDiscover.this);
                     }
                 }
@@ -144,9 +145,25 @@ public class DeviceDiscover implements NsdManager.ResolveListener
 
     public void stop()
     {
-        if (discovering) {
+        if (discovering)
+        {
             nsdManager.stopServiceDiscovery(discoveryListener);
         }
     }
 
+    public interface DeviceDiscoverListener
+    {
+        /**
+         * Called when the address of a device is found.
+         *
+         * @param address The IP address of the device.
+         * @param port    The port of the device.
+         */
+        void onResolved(InetAddress address, int port);
+
+        /**
+         * Called when a device cannot be resolved.
+         */
+        void onResolveFailed();
+    }
 }

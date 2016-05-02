@@ -15,13 +15,19 @@ import java.text.DateFormat;
 class LogView implements SimpleCursorAdapter.ViewBinder
 {
     @Override
-    public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-        switch (view.getId()) {
+    public boolean setViewValue(View view, Cursor cursor, int columnIndex)
+    {
+        switch (view.getId())
+        {
             case R.id.log_time:
                 long time = cursor.getLong(columnIndex);
-                if (time > 0) {
-                    ((TextView) view).setText(DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
-                } else {
+                if (time > 0)
+                {
+                    ((TextView) view).setText(
+                            DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
+                }
+                else
+                {
                     ((TextView) view).setText(R.string.invalid);
                 }
                 return true;

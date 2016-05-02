@@ -43,15 +43,17 @@ public class MainActivity extends AppCompatActivity
                 {
                     // Define the columns to retrieve
                     String[] projection =
-                            {DeviceContract.DeviceEntry._ID, DeviceContract.DeviceEntry.COLUMN_NAME_NAME, DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME};
+                            {DeviceContract.DeviceEntry._ID,
+                             DeviceContract.DeviceEntry.COLUMN_NAME_NAME,
+                             DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME};
                     // Construct the loader
 
                     return new CursorLoader(MainActivity.this,
-                                    LogDatabaseProvider.URI_DEVICE,
-                                    projection,
-                                    null,
-                                    null,
-                                    null
+                                            LogDatabaseProvider.URI_DEVICE,
+                                            projection,
+                                            null,
+                                            null,
+                                            null
                     );
                 }
 
@@ -78,11 +80,13 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         deviceAdapter = new SimpleCursorAdapter(this,
-                R.layout.device_list_item,
-                null,
-                new String[]{DeviceContract.DeviceEntry.COLUMN_NAME_NAME, DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME},
-                new int[]{R.id.device_name, R.id.device_sync_time},
-                0);
+                                                R.layout.device_list_item,
+                                                null,
+                                                new String[]{
+                                                        DeviceContract.DeviceEntry.COLUMN_NAME_NAME,
+                                                        DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME},
+                                                new int[]{R.id.device_name, R.id.device_sync_time},
+                                                0);
 
         deviceAdapter.setViewBinder(new DeviceView());
 
@@ -199,8 +203,8 @@ public class MainActivity extends AppCompatActivity
             }
             catch (SQLException e)
             {
+                Log.e(TAG, "Database exception: " + e.getMessage());
             }
-
         }
         else
         {

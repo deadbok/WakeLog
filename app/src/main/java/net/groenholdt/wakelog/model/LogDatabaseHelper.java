@@ -38,24 +38,20 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
 
     /**
      * Upgrade an older version of the database.
-     *
+     * <p/>
      * TODO Implement this, preferably without DROPping the old data.
-     *
-     * @param db
-     * @param oldVersion
-     * @param newVersion
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
         // Logs that the database is being upgraded
         Log.i(TAG, "Upgrading database from version " + oldVersion + " to " +
-                newVersion);
+                   newVersion);
     }
 
     //Device functions.
 
-    public void addDevice(String deviceName, int ipAddr, int syncTime)
+    public void addDevice(String deviceName, int ipAddress, int syncTime)
     {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -64,7 +60,7 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
 
         deviceValues
                 .put(DeviceContract.DeviceEntry.COLUMN_NAME_NAME, deviceName);
-        deviceValues.put(DeviceContract.DeviceEntry.COLUMN_NAME_IP, ipAddr);
+        deviceValues.put(DeviceContract.DeviceEntry.COLUMN_NAME_IP, ipAddress);
         deviceValues
                 .put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, syncTime);
 
@@ -85,8 +81,8 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         SQLiteDatabase db = getWritableDatabase();
 
         int ret = db.delete(DeviceContract.TABLE_NAME,
-                DeviceContract.DeviceEntry._ID + "=?",
-                new String[]{String.valueOf(deviceId)});
+                            DeviceContract.DeviceEntry._ID + "=?",
+                            new String[]{String.valueOf(deviceId)});
         if (ret < 1)
         {
             Log.i(TAG, "Device not found");
@@ -94,8 +90,8 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         Log.d(TAG, "Deleted " + String.valueOf(ret) + " device(s)");
 
         ret = db.delete(LogContract.TABLE_NAME,
-                LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
-                new String[]{String.valueOf(deviceId)});
+                        LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
+                        new String[]{String.valueOf(deviceId)});
         if (ret < 1)
         {
             Log.i(TAG, "No log entries found");
@@ -108,23 +104,26 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         SQLiteDatabase db = getReadableDatabase();
 
         Cursor deviceCursor = db.query(DeviceContract.TABLE_NAME,
-                null,
-                DeviceContract.DeviceEntry._ID + "=?",
-                new String[]{String.valueOf(deviceId)},
-                null,
-                null,
-                null);
+                                       null,
+                                       DeviceContract.DeviceEntry._ID + "=?",
+                                       new String[]{String.valueOf(deviceId)},
+                                       null,
+                                       null,
+                                       null);
         deviceCursor.moveToNext();
 
         Device device = new Device();
         device.setId(deviceCursor.getLong(deviceCursor
-                .getColumnIndex(DeviceContract.DeviceEntry._ID)));
+                                                  .getColumnIndex(DeviceContract.DeviceEntry._ID)));
         device.setName(deviceCursor.getString(deviceCursor
-                .getColumnIndex(DeviceContract.DeviceEntry.COLUMN_NAME_NAME)));
-        device.setIpAddr(deviceCursor.getInt(deviceCursor
-                .getColumnIndex(DeviceContract.DeviceEntry.COLUMN_NAME_IP)));
+                                                      .getColumnIndex(
+                                                              DeviceContract.DeviceEntry.COLUMN_NAME_NAME)));
+        device.setIpAddress(deviceCursor.getInt(deviceCursor
+                                                        .getColumnIndex(
+                                                                DeviceContract.DeviceEntry.COLUMN_NAME_IP)));
         device.setSyncTime(deviceCursor.getInt(deviceCursor
-                .getColumnIndex(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME)));
+                                                       .getColumnIndex(
+                                                               DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME)));
 
         device.setLog(getLog(deviceId));
 
@@ -146,17 +145,22 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         while (deviceCursor.moveToNext())
         {
             long deviceId = deviceCursor.getLong(deviceCursor
-                    .getColumnIndex(DeviceContract.DeviceEntry._ID));
+                                                         .getColumnIndex(
+                                                                 DeviceContract.DeviceEntry._ID));
 
             Device device = new Device();
             device.setId(deviceCursor.getLong(deviceCursor
-                    .getColumnIndex(DeviceContract.DeviceEntry._ID)));
+                                                      .getColumnIndex(
+                                                              DeviceContract.DeviceEntry._ID)));
             device.setName(deviceCursor.getString(deviceCursor
-                    .getColumnIndex(DeviceContract.DeviceEntry.COLUMN_NAME_NAME)));
-            device.setIpAddr(deviceCursor.getInt(deviceCursor
-                    .getColumnIndex(DeviceContract.DeviceEntry.COLUMN_NAME_IP)));
+                                                          .getColumnIndex(
+                                                                  DeviceContract.DeviceEntry.COLUMN_NAME_NAME)));
+            device.setIpAddress(deviceCursor.getInt(deviceCursor
+                                                            .getColumnIndex(
+                                                                    DeviceContract.DeviceEntry.COLUMN_NAME_IP)));
             device.setSyncTime(deviceCursor.getInt(deviceCursor
-                    .getColumnIndex(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME)));
+                                                           .getColumnIndex(
+                                                                   DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME)));
 
             device.setLog(getLog(deviceId));
 
@@ -207,29 +211,32 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         SQLiteDatabase db = getReadableDatabase();
 
         Cursor logCursor = db.query(LogContract.TABLE_NAME,
-                null,
-                LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
-                new String[]{String.valueOf(deviceId)},
-                null,
-                null,
-                LogContract.LogEntry._ID);
+                                    null,
+                                    LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
+                                    new String[]{String.valueOf(deviceId)},
+                                    null,
+                                    null,
+                                    LogContract.LogEntry._ID);
 
         while (logCursor.moveToNext())
         {
             LogEntry logEntry = new LogEntry();
             logEntry.setId(logCursor.getLong(logCursor
-                    .getColumnIndex(LogContract.LogEntry._ID)));
+                                                     .getColumnIndex(LogContract.LogEntry._ID)));
 
             int time = logCursor.getInt(logCursor
-                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_TIME));
+                                                .getColumnIndex(
+                                                        LogContract.LogEntry.COLUMN_NAME_TIME));
             logEntry.setTime(time);
 
             int type = logCursor.getInt(logCursor
-                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_TYPE));
+                                                .getColumnIndex(
+                                                        LogContract.LogEntry.COLUMN_NAME_TYPE));
             logEntry.setType(type);
 
             int device = logCursor.getInt(logCursor
-                    .getColumnIndex(LogContract.LogEntry.COLUMN_NAME_DEVICE));
+                                                  .getColumnIndex(
+                                                          LogContract.LogEntry.COLUMN_NAME_DEVICE));
             logEntry.setDeviceId(device);
 
             log.add(logEntry);
@@ -246,12 +253,12 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         SQLiteDatabase db = getReadableDatabase();
 
         return (db.query(LogContract.TABLE_NAME,
-                null,
-                LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
-                new String[]{String.valueOf(deviceId)},
-                null,
-                null,
-                LogContract.LogEntry._ID));
+                         null,
+                         LogContract.LogEntry.COLUMN_NAME_DEVICE + "=?",
+                         new String[]{String.valueOf(deviceId)},
+                         null,
+                         null,
+                         LogContract.LogEntry._ID));
     }
 
 }

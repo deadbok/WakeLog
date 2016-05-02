@@ -13,6 +13,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.AndroidRuntimeException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,14 +30,12 @@ import net.groenholdt.wakelog.model.LogDatabaseHelper;
 import net.groenholdt.wakelog.model.LogDatabaseProvider;
 import net.groenholdt.wakelog.model.LogEntry;
 import net.groenholdt.wakelog.protocol.DeviceDiscover;
-import net.groenholdt.wakelog.protocol.DeviceDiscoverListener;
-import net.groenholdt.wakelog.protocol.JSONWebSockerLisentener;
 import net.groenholdt.wakelog.protocol.JSONWebSocket;
 
 import java.net.InetAddress;
 
 public class LogActivity extends AppCompatActivity
-        implements DeviceDiscoverListener, JSONWebSockerLisentener
+        implements DeviceDiscover.DeviceDiscoverListener, JSONWebSocket.JSONWebSocketListener
 {
     private static final String TAG = "LogActivity";
     private static final int LOG_LOADER_ID = 2;
@@ -110,10 +109,18 @@ public class LogActivity extends AppCompatActivity
 
         logAdapter.setViewBinder(new LogView());
 
-        ListView listView = (ListView) findViewById(R.id.logView);
-        if (logAdapter != null)
+        try
         {
-            listView.setAdapter(logAdapter);
+            ListView listView = (ListView) findViewById(R.id.logView);
+            if (logAdapter != null)
+            {
+                listView.setAdapter(logAdapter);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "Exception when creating log list: " + e.getMessage());
+            throw new AndroidRuntimeException();
         }
 
 
@@ -177,15 +184,15 @@ public class LogActivity extends AppCompatActivity
         super.onResume();
     }
 
-    public void onResolved(InetAddress addr, int port)
+    public void onResolved(InetAddress address, int port)
     {
-        Log.d(TAG, "Device resolved: " + addr.toString() + ":" + port);
+        Log.d(TAG, "Device resolved: " + address.toString() + ":" + port);
         Toast.makeText(this,
                        device.getName() + " found.", Toast.LENGTH_LONG).show();
 
         discoverer.stop();
 
-        ws = new JSONWebSocket(addr, port, this);
+        ws = new JSONWebSocket(address, port, this);
     }
 
     public void onResolveFailed()
