@@ -109,24 +109,19 @@ public class LogActivity extends AppCompatActivity
 
         logAdapter.setViewBinder(new LogView());
 
-        try
+        ListView listView = (ListView) findViewById(R.id.logView);
+        if (listView == null)
         {
-            ListView listView = (ListView) findViewById(R.id.logView);
-            if (logAdapter != null)
-            {
-                listView.setAdapter(logAdapter);
-            }
+            Log.e(TAG, "No ListView.");
+            throw new AndroidRuntimeException("ListViewNull",
+                                              new Throwable("Could not find list view for logs."));
         }
-        catch (Exception e)
-        {
-            Log.e(TAG, "Exception when creating log list: " + e.getMessage());
-            throw new AndroidRuntimeException();
-        }
+        listView.setAdapter(logAdapter);
 
 
         FloatingActionButton fab =
                 (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
+        View.OnClickListener clickListener = new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -139,7 +134,15 @@ public class LogActivity extends AppCompatActivity
                 }
                 LogActivity.this.discoverer.start();
             }
-        });
+        };
+
+        if (fab == null)
+        {
+            Log.e(TAG, "No fab.");
+            throw new AndroidRuntimeException("FabNull", new Throwable(
+                    "Could not create button for adding device."));
+        }
+        fab.setOnClickListener(clickListener);
 
         getSupportLoaderManager()
                 .initLoader(LOG_LOADER_ID, getIntent().getExtras(), logLoader);
@@ -174,6 +177,10 @@ public class LogActivity extends AppCompatActivity
     protected void onPause()
     {
         Log.d(TAG, "Pausing.");
+        if (ws != null)
+        {
+            ws.close();
+        }
         super.onPause();
     }
 

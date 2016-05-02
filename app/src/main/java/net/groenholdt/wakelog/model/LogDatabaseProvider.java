@@ -3,11 +3,14 @@ package net.groenholdt.wakelog.model;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.util.AndroidRuntimeException;
 import android.util.Log;
 
 import java.util.Arrays;
@@ -55,11 +58,11 @@ public class LogDatabaseProvider extends ContentProvider
     public boolean onCreate()
     {
         dbHelper = new LogDatabaseHelper(getContext());
-        return (dbHelper != null);
+        return true;
     }
 
     @Override
-    public String getType(Uri uri)
+    public String getType(@NonNull Uri uri)
     {
         int match = uriMatcher.match(uri);
         switch (match)
@@ -78,13 +81,21 @@ public class LogDatabaseProvider extends ContentProvider
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs)
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs)
     {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         int count;
         String[] id = {uri.getLastPathSegment()};
+        Context context = getContext();
 
         Log.d(TAG, "Deleting: " + uri.toString());
+
+        if (context == null)
+        {
+            Log.e(TAG, "Context is null.");
+            throw new AndroidRuntimeException("ContextNull", new Throwable(
+                    "Could not find context for delete operation."));
+        }
 
         int match = uriMatcher.match(uri);
         switch (match)
@@ -93,9 +104,9 @@ public class LogDatabaseProvider extends ContentProvider
                 count = database.delete(DeviceContract.TABLE_NAME, null, null);
                 //Delete all logs while we're at it.
                 database.delete(LogContract.TABLE_NAME, null, null);
-                getContext().getContentResolver()
-                            .notifyChange(URI_DEVICE, null);
-                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                context.getContentResolver()
+                       .notifyChange(URI_DEVICE, null);
+                context.getContentResolver().notifyChange(URI_LOG, null);
                 Log.d(TAG, "Deleted all devices and logs");
                 break;
             case URI_CODE_DEVICE:
@@ -107,15 +118,15 @@ public class LogDatabaseProvider extends ContentProvider
                 int logs = database.delete(LogContract.TABLE_NAME,
                                            LogContract.LogEntry.COLUMN_NAME_DEVICE + " = ?", id);
                 Log.d(TAG, "Deleted " + String.valueOf(logs) + " logs(s)");
-                getContext().getContentResolver()
-                            .notifyChange(URI_DEVICE, null);
-                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                context.getContentResolver()
+                       .notifyChange(URI_DEVICE, null);
+                context.getContentResolver().notifyChange(URI_LOG, null);
                 break;
             case URI_CODE_LOGS:
                 Log.d(TAG, "Delete all logs");
                 count = database.delete(LogContract.TABLE_NAME, null, null);
-                getContext().getContentResolver()
-                            .notifyChange(URI_LOG, null);
+                context.getContentResolver()
+                       .notifyChange(URI_LOG, null);
                 Log.d(TAG, "Deleted " + String.valueOf(count) + " logs");
                 break;
             case URI_CODE_LOG:
@@ -123,7 +134,7 @@ public class LogDatabaseProvider extends ContentProvider
 
                 count = database.delete(LogContract.TABLE_NAME, "_id = ?", id);
                 Log.d(TAG, "Deleted " + String.valueOf(count) + " logs(s)");
-                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                context.getContentResolver().notifyChange(URI_LOG, null);
                 break;
             default:
                 throw new IllegalArgumentException(
@@ -133,10 +144,20 @@ public class LogDatabaseProvider extends ContentProvider
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values)
+    public Uri insert(@NonNull Uri uri, ContentValues values)
     {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         long id;
+        Context context = getContext();
+
+        Log.d(TAG, "Adding: " + uri.toString());
+
+        if (context == null)
+        {
+            Log.e(TAG, "Context is null.");
+            throw new AndroidRuntimeException("ContextNull", new Throwable(
+                    "Could not find context for insert operation."));
+        }
 
         int match = uriMatcher.match(uri);
         switch (match)
@@ -145,14 +166,14 @@ public class LogDatabaseProvider extends ContentProvider
                 values.put(DeviceContract.DeviceEntry.COLUMN_NAME_IP, 0);
                 values.put(DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME, 0);
                 id = database.insert(DeviceContract.TABLE_NAME, null, values);
-                getContext().getContentResolver()
-                            .notifyChange(URI_DEVICE, null);
+                context.getContentResolver()
+                       .notifyChange(URI_DEVICE, null);
                 Log.d(TAG, "Added device with id: " + String.valueOf(id));
                 break;
             case URI_CODE_LOGS:
                 id = database.insert(LogContract.TABLE_NAME, null, values);
-                getContext().getContentResolver()
-                            .notifyChange(URI_LOG, null);
+                context.getContentResolver()
+                       .notifyChange(URI_LOG, null);
                 Log.d(TAG, "Added log entry with id: " + String.valueOf(id));
                 break;
             default:
@@ -163,7 +184,7 @@ public class LogDatabaseProvider extends ContentProvider
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder
                        )
     {
@@ -206,18 +227,35 @@ public class LogDatabaseProvider extends ContentProvider
                                        null,
                                        null,
                                        sortOrder);
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        Context context = getContext();
+        if (context == null)
+        {
+            Log.e(TAG, "Could not get context.");
+            throw new AndroidRuntimeException("ContextNull", new Throwable(
+                    "Could not get context for query operation."));
+        }
+        cursor.setNotificationUri(context.getContentResolver(), uri);
         return cursor;
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
+    public int update(@NonNull Uri uri, ContentValues values, String selection,
                       String[] selectionArgs
                      )
     {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         int count;
         String[] id = {uri.getLastPathSegment()};
+        Context context = getContext();
+
+        Log.d(TAG, "Updating: " + uri.toString());
+
+        if (context == null)
+        {
+            Log.e(TAG, "Context is null.");
+            throw new AndroidRuntimeException("ContextNull", new Throwable(
+                    "Could not find context for update operation."));
+        }
 
         int match = uriMatcher.match(uri);
         switch (match)
@@ -227,15 +265,15 @@ public class LogDatabaseProvider extends ContentProvider
 
                 count = database.update(DeviceContract.TABLE_NAME, values, "_id = ?", id);
                 Log.d(TAG, "Updated " + String.valueOf(count) + "device(s)");
-                getContext().getContentResolver()
-                            .notifyChange(URI_DEVICE, null);
+                context.getContentResolver()
+                       .notifyChange(URI_DEVICE, null);
                 break;
             case URI_CODE_LOG:
                 Log.d(TAG, "Updating log with id: " + id[0]);
 
                 count = database.update(LogContract.TABLE_NAME, values, "_id = ?", id);
                 Log.d(TAG, "Updated " + String.valueOf(count) + "logs(s)");
-                getContext().getContentResolver().notifyChange(URI_LOG, null);
+                context.getContentResolver().notifyChange(URI_LOG, null);
                 break;
             default:
                 throw new IllegalArgumentException(

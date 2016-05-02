@@ -107,6 +107,11 @@ public class JSONWebSocket
         return (webSocketConnection.isConnected());
     }
 
+    public void close()
+    {
+        webSocketConnection.disconnect();
+    }
+
     public interface JSONWebSocketListener
     {
         void onOpen();

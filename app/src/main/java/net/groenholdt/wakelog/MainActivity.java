@@ -13,6 +13,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.AndroidRuntimeException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -91,6 +92,12 @@ public class MainActivity extends AppCompatActivity
         deviceAdapter.setViewBinder(new DeviceView());
 
         ListView listView = (ListView) findViewById(R.id.deviceView);
+        if (listView == null)
+        {
+            Log.e(TAG, "No ListView.");
+            throw new AndroidRuntimeException("ListViewNull", new Throwable(
+                    "Could not find list view for devices."));
+        }
         listView.setAdapter(deviceAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -110,6 +117,12 @@ public class MainActivity extends AppCompatActivity
 
         FloatingActionButton fab =
                 (FloatingActionButton) findViewById(R.id.fab_add_device);
+        if (fab == null)
+        {
+            Log.e(TAG, "No fab.");
+            throw new AndroidRuntimeException("FabNull", new Throwable(
+                    "Could not create button for updating logs."));
+        }
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override

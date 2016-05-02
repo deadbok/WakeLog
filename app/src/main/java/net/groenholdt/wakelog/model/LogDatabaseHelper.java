@@ -190,7 +190,7 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
      * @param type    Entry type.
      * @param device  Log device ID.
      */
-    public void addLogEntry(String logTime, int type, int device)
+    public long addLogEntry(String logTime, int type, int device)
     {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -201,7 +201,7 @@ public class LogDatabaseHelper extends SQLiteOpenHelper
         logValues.put(LogContract.LogEntry.COLUMN_NAME_TYPE, type);
         logValues.put(LogContract.LogEntry.COLUMN_NAME_DEVICE, device);
 
-        long logId = db.insert(LogContract.TABLE_NAME, null, logValues);
+        return (db.insert(LogContract.TABLE_NAME, null, logValues));
     }
 
     private ArrayList<LogEntry> getLog(long deviceId)
