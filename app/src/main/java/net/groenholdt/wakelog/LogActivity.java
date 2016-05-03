@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -81,6 +82,7 @@ public class LogActivity extends AppCompatActivity
     private Device device;
     private DeviceDiscover discoverer;
     private JSONWebSocket ws;
+    private CountDownTimer timeoutTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -118,21 +120,45 @@ public class LogActivity extends AppCompatActivity
         }
         listView.setAdapter(logAdapter);
 
+        //Count down to connection timeout.
+        timeoutTimer = new CountDownTimer(10000, 1000)
+        {
+
+            public void onTick(long millisUntilFinished)
+            {
+                Log.d(TAG, "Update in progress, seconds remaining: " + millisUntilFinished / 1000);
+            }
+
+            public void onFinish()
+            {
+                Log.e(TAG, "Update timed out.");
+                Toast.makeText(LogActivity.this,
+                               "Connection to " + device.getName() + " timed out.",
+                               Toast.LENGTH_SHORT).show();
+            }
+        };
+
 
         FloatingActionButton fab =
                 (FloatingActionButton) findViewById(R.id.fab);
         View.OnClickListener clickListener = new View.OnClickListener()
         {
+            private static final String TAG = "LogActivity.clickListener";
+
             @Override
             public void onClick(View view)
             {
+                Log.d(TAG, "Refresh pressed");
                 if (LogActivity.this.discoverer == null)
                 {
                     LogActivity.this.discoverer =
                             new DeviceDiscover(LogActivity.this, device.getName(),
                                                LogActivity.this);
                 }
+                LogActivity.this.timeoutTimer.start();
                 LogActivity.this.discoverer.start();
+
+
             }
         };
 
@@ -218,6 +244,9 @@ public class LogActivity extends AppCompatActivity
     public void onLogEntry(LogEntry entry)
     {
         Log.d(TAG, "Adding log entry to database: " + entry.toString());
+
+        //Data is coming, cancel the connection timeout timer.
+        timeoutTimer.cancel();
         try
         {
 
