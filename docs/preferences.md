@@ -1,0 +1,4 @@
+Preferences.
+============
+
+ * Connection timeout.

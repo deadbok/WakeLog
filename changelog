@@ -1,3 +1,7 @@
+05-04-2016 Martin Grønholdt
+
+ * Progress spinner, and connection timeout.
+
 05-01-2016 Martin Grønholdt
 
  * Device sync thread fixes.

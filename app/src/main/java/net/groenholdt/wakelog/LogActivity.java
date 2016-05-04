@@ -1,5 +1,6 @@
 package net.groenholdt.wakelog;
 
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -83,6 +84,7 @@ public class LogActivity extends AppCompatActivity
     private DeviceDiscover discoverer;
     private JSONWebSocket ws;
     private CountDownTimer timeoutTimer;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -132,13 +134,26 @@ public class LogActivity extends AppCompatActivity
             public void onFinish()
             {
                 Log.e(TAG, "Update timed out.");
+                progressDialog.dismiss();
                 Toast.makeText(LogActivity.this,
                                "Connection to " + device.getName() + " timed out.",
                                Toast.LENGTH_SHORT).show();
+                discoverer.stop();
+                if (ws != null)
+                {
+                    if (ws.isOpen())
+                    {
+                        ws.close();
+                    }
+                }
             }
         };
 
+        //Progress dialog used when syncing.
+        progressDialog = new ProgressDialog(LogActivity.this);
 
+
+        //FAB to update log entries.
         FloatingActionButton fab =
                 (FloatingActionButton) findViewById(R.id.fab);
         View.OnClickListener clickListener = new View.OnClickListener()
@@ -158,7 +173,9 @@ public class LogActivity extends AppCompatActivity
                 LogActivity.this.timeoutTimer.start();
                 LogActivity.this.discoverer.start();
 
-
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.setMessage("Connecting to " + device.getName());
+                progressDialog.show();
             }
         };
 
@@ -231,6 +248,11 @@ public class LogActivity extends AppCompatActivity
     public void onResolveFailed()
     {
         Log.d(TAG, "Resolve failed.");
+
+        //Stop the spinner and timeout timer.
+        progressDialog.dismiss();
+        timeoutTimer.cancel();
+
         Toast.makeText(this,
                        device.getName() + " not found.", Toast.LENGTH_SHORT).show();
     }
@@ -241,12 +263,30 @@ public class LogActivity extends AppCompatActivity
         ws.getLog();
     }
 
+    public void onEntries(int entries)
+    {
+        Log.d(TAG, "Start of " + entries + " entries.");
+
+        //Cancel timeout.
+        timeoutTimer.cancel();
+        if (entries == 0)
+        {
+            progressDialog.dismiss();
+            Toast.makeText(this,
+                           device.getName() + " has no new log entries.", Toast.LENGTH_SHORT)
+                 .show();
+        }
+        else
+        {
+            progressDialog.setMessage("Downloading " + entries);
+            progressDialog.show();
+        }
+    }
+
     public void onLogEntry(LogEntry entry)
     {
         Log.d(TAG, "Adding log entry to database: " + entry.toString());
 
-        //Data is coming, cancel the connection timeout timer.
-        timeoutTimer.cancel();
         try
         {
 
@@ -273,5 +313,13 @@ public class LogActivity extends AppCompatActivity
         {
             Log.e(TAG, "Exception: " + e.getMessage());
         }
+    }
+
+    public void onEntriesEnd()
+    {
+        //Cancel timeout.
+        timeoutTimer.cancel();
+        //Dismiss the progress bar.
+        progressDialog.dismiss();
     }
 }

@@ -4,8 +4,8 @@ import android.util.Log;
 
 import net.groenholdt.wakelog.model.LogEntry;
 
-import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -62,13 +62,15 @@ public class JSONWebSocket
                     Log.d(TAG, "WebSocket message: " + payload);
                     try
                     {
-                        JSONArray jsonLog = new JSONArray(payload);
-                        for (int i = 0; i < jsonLog.length(); i++)
+                        JSONObject jsonLog = new JSONObject(payload);
+                        Log.d(TAG, "Entries: " + jsonLog.getInt("entries"));
+                        JSONWebSocket.listener.onEntries(jsonLog.getInt("entries"));
+                        for (int i = 0; i < jsonLog.getJSONArray("logs").length(); i++)
                         {
-                            Log.d(TAG, "Adding entry: " + jsonLog.getLong(i));
+                            Log.d(TAG, "Adding entry: " + jsonLog.getJSONArray("logs").getLong(i));
 
                             LogEntry entry = new LogEntry();
-                            entry.setTime((int) jsonLog.getLong(i));
+                            entry.setTime((int) jsonLog.getJSONArray("logs").getLong(i));
                             JSONWebSocket.listener.onLogEntry(entry);
                         }
                     }
@@ -76,12 +78,14 @@ public class JSONWebSocket
                     {
                         Log.e(TAG, e.getMessage());
                     }
+                    JSONWebSocket.listener.onEntriesEnd();
                 }
 
                 @Override
                 public void onClose(int code, String reason)
                 {
                     Log.d(TAG, "WebSocket closed: " + reason);
+                    JSONWebSocket.listener.onEntriesEnd();
                 }
             });
         }
@@ -109,6 +113,7 @@ public class JSONWebSocket
 
     public void close()
     {
+        Log.d(TAG, "Closing connection.");
         webSocketConnection.disconnect();
     }
 
@@ -116,6 +121,10 @@ public class JSONWebSocket
     {
         void onOpen();
 
+        void onEntries(int entries);
+
         void onLogEntry(LogEntry entry);
+
+        void onEntriesEnd();
     }
 }
