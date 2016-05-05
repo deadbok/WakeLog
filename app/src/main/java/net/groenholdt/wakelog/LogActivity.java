@@ -12,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,7 +23,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import net.groenholdt.wakelog.model.Device;
@@ -45,32 +45,46 @@ public class LogActivity extends AppCompatActivity
     private final LoaderManager.LoaderCallbacks<Cursor> logLoader =
             new LoaderManager.LoaderCallbacks<Cursor>()
             {
-                // Create and return the actual cursor loader for the contacts data
+                private static final String TAG = "LogActivity.logLoader";
+
                 @Override
                 public Loader<Cursor> onCreateLoader(int id, Bundle args)
                 {
-                    // Define the columns to retrieve
-                    String[] projection =
-                            {LogContract.LogEntry._ID, LogContract.LogEntry.COLUMN_NAME_TIME,
-                             LogContract.LogEntry.COLUMN_NAME_TYPE,
-                             LogContract.LogEntry.COLUMN_NAME_DEVICE};
-                    // Construct the loader
-                    Log.d(TAG, "Creating loader for device id: " +
-                               String.valueOf(args.getLong("device_id", 0)));
+                    Log.d(TAG, "Creating loader with ID: " + id);
+                    //Check if we know the loader ID.
+                    switch (id)
+                    {
+                        case LOG_LOADER_ID:
+                            Log.d(TAG, "Creating log group loader.");
 
-                    return new CursorLoader(LogActivity.this,
-                                            LogDatabaseProvider.URI_LOG,
-                                            projection,
-                                            LogContract.LogEntry.COLUMN_NAME_DEVICE + " = " +
-                                            args.getLong("device_id", 0),
-                                            null,
-                                            null
-                    );
+                            // Define the columns to retrieve
+                            String[] projection =
+                                    {LogContract.LogEntry._ID,
+                                     LogContract.LogEntry.COLUMN_NAME_TIME,
+                                     LogContract.LogEntry.COLUMN_NAME_TYPE,
+                                     LogContract.LogEntry.COLUMN_NAME_DEVICE};
+                            // Construct the loader
+                            Log.d(TAG, "Creating loader for device id: " +
+                                       String.valueOf(args.getLong("device_id", 0)));
+
+                            return new CursorLoader(LogActivity.this,
+                                                    LogDatabaseProvider.URI_LOG,
+                                                    projection,
+                                                    LogContract.LogEntry.COLUMN_NAME_DEVICE +
+                                                    " = " +
+                                                    args.getLong("device_id", 0),
+                                                    null,
+                                                    LogContract.LogEntry.COLUMN_NAME_TIME);
+                        default:
+                            Log.e(TAG, "Unknown loader ID");
+                            return null;
+                    }
                 }
 
                 @Override
                 public void onLoadFinished(Loader<Cursor> loader, Cursor cursor)
                 {
+                    //Use the new cursor.
                     logAdapter.swapCursor(cursor);
                 }
 
@@ -78,6 +92,7 @@ public class LogActivity extends AppCompatActivity
                 public void onLoaderReset(Loader<Cursor> loader)
                 {
                     logAdapter.swapCursor(null);
+
                 }
             };
     private Device device;
@@ -100,8 +115,8 @@ public class LogActivity extends AppCompatActivity
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        LogDatabaseHelper database = new LogDatabaseHelper(this);
-        device = database.getDevice(getIntent().getLongExtra("device_id", 0));
+        LogDatabaseHelper dbHelper = new LogDatabaseHelper(this);
+        device = dbHelper.getDevice(getIntent().getLongExtra("device_id", 0));
 
         logAdapter = new SimpleCursorAdapter(this,
                                              R.layout.log_list_item,
@@ -111,7 +126,7 @@ public class LogActivity extends AppCompatActivity
                                              new int[]{R.id.log_time, R.id.log_type},
                                              0);
 
-        logAdapter.setViewBinder(new LogView());
+        logAdapter.setViewBinder(new LogView(this));
 
         ListView listView = (ListView) findViewById(R.id.logView);
         if (listView == null)
@@ -158,8 +173,6 @@ public class LogActivity extends AppCompatActivity
                 (FloatingActionButton) findViewById(R.id.fab);
         View.OnClickListener clickListener = new View.OnClickListener()
         {
-            private static final String TAG = "LogActivity.clickListener";
-
             @Override
             public void onClick(View view)
             {
@@ -187,8 +200,19 @@ public class LogActivity extends AppCompatActivity
         }
         fab.setOnClickListener(clickListener);
 
-        getSupportLoaderManager()
-                .initLoader(LOG_LOADER_ID, getIntent().getExtras(), logLoader);
+        //Get a loader.
+        Loader<Cursor> loader = getSupportLoaderManager().getLoader(LOG_LOADER_ID);
+        if (loader == null)
+        {
+            //Create a new loader.
+            getSupportLoaderManager().initLoader(LOG_LOADER_ID, getIntent().getExtras(), logLoader);
+        }
+        else if (!loader.isReset())
+        {
+            //Restart an existing loader.
+            getSupportLoaderManager()
+                    .restartLoader(LOG_LOADER_ID, getIntent().getExtras(), logLoader);
+        }
     }
 
     @Override

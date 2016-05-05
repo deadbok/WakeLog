@@ -42,20 +42,30 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public Loader<Cursor> onCreateLoader(int id, Bundle args)
                 {
-                    // Define the columns to retrieve
-                    String[] projection =
-                            {DeviceContract.DeviceEntry._ID,
-                             DeviceContract.DeviceEntry.COLUMN_NAME_NAME,
-                             DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME};
-                    // Construct the loader
+                    //Check if we know the loader ID.
+                    if (id == DEVICE_LOADER_ID)
+                    {
+                        Log.d(TAG, "Creating device loader.");
 
-                    return new CursorLoader(MainActivity.this,
-                                            LogDatabaseProvider.URI_DEVICE,
-                                            projection,
-                                            null,
-                                            null,
-                                            null
-                    );
+                        // Define the columns to retrieve
+                        String[] projection =
+                                {DeviceContract.DeviceEntry._ID,
+                                 DeviceContract.DeviceEntry.COLUMN_NAME_NAME,
+                                 DeviceContract.DeviceEntry.COLUMN_NAME_SYNC_TIME};
+                        // Construct the loader
+
+                        return new CursorLoader(MainActivity.this,
+                                                LogDatabaseProvider.URI_DEVICE,
+                                                projection,
+                                                null,
+                                                null,
+                                                null);
+                    }
+                    else
+                    {
+                        Log.e(TAG, "Unknown loader id: " + id);
+                    }
+                    return null;
                 }
 
                 @Override

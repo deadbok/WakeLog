@@ -42,7 +42,7 @@ public class AboutDialogFragment extends DialogFragment
             @Override
             public void onShow(DialogInterface dialog)
             {
-                versionLabel = (TextView) ((AlertDialog) dialog).findViewById(R.id.version_label);
+                versionLabel = (TextView) ((AlertDialog) dialog).findViewById(R.id.versionLabel);
                 String version = "" + net.groenholdt.wakelog.BuildConfig.VERSION_NAME;
                 versionLabel.setText(version);
             }

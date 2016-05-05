@@ -16,4 +16,5 @@
     <string name="version_default">0.0.0</string>
     <string name="title_dialog_about">About</string>
     <string name="invalid">Invalid</string>
+    <string name="credits">\n\nUses these libraries:\n * Autobahn|Android: http://autobahn.ws/android/</string>
 </resources>
