@@ -1,0 +1,43 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="day_highlight"
+            android:summary="@string/pref_description_day_highlight"
+            android:title="@string/pref_title_day_highlight"/>
+
+        <com.rarepebble.colorpicker.ColorPreference
+            android:key="day_color"
+            android:title="@string/pref_title_day_color"
+            app:colorpicker_defaultColor="@color/colorDay"
+            app:colorpicker_showAlpha="false"
+            />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="month_highlight"
+            android:summary="@string/pref_description_month_highlight"
+            android:title="@string/pref_title_month_highlight"/>
+
+        <com.rarepebble.colorpicker.ColorPreference
+            android:key="month_color"
+            android:title="@string/pref_title_month_color"
+            app:colorpicker_defaultColor="@color/colorMonth"
+            app:colorpicker_showAlpha="false"
+            />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="year_highlight"
+            android:summary="@string/pref_description_year_highlight"
+            android:title="@string/pref_title_year_highlight"/>
+
+        <com.rarepebble.colorpicker.ColorPreference
+            android:key="year_color"
+            android:title="@string/pref_title_year_color"
+            app:colorpicker_defaultColor="@color/colorYear"
+            app:colorpicker_showAlpha="false"
+            />
+
+</PreferenceScreen>

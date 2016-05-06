@@ -1,0 +1,12 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="10"
+        android:dialogMessage="@string/pref_message_timeout"
+        android:dialogTitle="@string/pref_title_timeout"
+        android:inputType="number"
+        android:key="timeout"
+        android:persistent="true"
+        android:title="@string/pref_title_timeout"/>
+
+</PreferenceScreen>

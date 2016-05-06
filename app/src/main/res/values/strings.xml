@@ -16,65 +16,34 @@
     <string name="version_default">0.0.0</string>
     <string name="title_dialog_about">About</string>
     <string name="invalid">Invalid</string>
-    <string name="credits">\n\nUses these libraries:\n * Autobahn|Android: http://autobahn.ws/android/</string>
+    <string name="credits">\n\nUses these libraries:\n * Autobahn|Android: http://autobahn.ws/android/\n * HSV-Alpha Color Picker for Android: https://github.com/martin-stone/hsv-alpha-color-picker-android</string>
     <string name="atText">%1$s at %2$s</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->
 
-    <!-- Example General settings -->
-    <string name="pref_header_general">General</string>
+    <!-- Appearance settings -->
+    <string name="pref_title_category_highlight">Highlights</string>
+    <string name="pref_highlight_appearance">Appearance</string>
 
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
-    </string>
+    <string name="pref_title_day_highlight">Enable highlight on new day</string>
+    <string name="pref_description_day_highlight">Highlight log entries on each new day</string>
 
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
+    <string name="pref_title_month_highlight">Enable highlight on new month</string>
+    <string name="pref_description_month_highlight">Highlight log entries on each new month</string>
 
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
+    <string name="pref_title_year_highlight">Enable highlight on new year</string>
+    <string name="pref_description_year_highlight">Highlight log entries on each new year</string>
+
+    <string name="pref_title_day_color">Day color</string>
+    <string name="pref_title_month_color">Month color</string>
+    <string name="pref_title_year_color">Year color</string>
 
     <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_title_sync">Synchronization</string>
+    <string name="pref_title_timeout">Synchronization timeout</string>
+    <string name="pref_title_timeout_value">Synchronization timeout %s seconds</string>
+    <string name="pref_message_timeout">Time, in seconds, before the synchronization process times out.</string>
 
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
 
-    <string name="pref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
-
-    <string name="pref_title_new_message_notifications">New message notifications</string>
-
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_ringtone_silent">Silent</string>
-
-    <string name="pref_title_vibrate">Vibrate</string>
 </resources>
