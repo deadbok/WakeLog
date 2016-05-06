@@ -1,5 +1,6 @@
 package net.groenholdt.wakelog;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -25,6 +26,7 @@ public class AddDeviceDialogFragment extends DialogFragment implements TextWatch
     private static EditText nameEdit;
     private AddDeviceDialogListener listener;
 
+    @SuppressLint("InflateParams")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)

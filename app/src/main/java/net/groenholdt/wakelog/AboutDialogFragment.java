@@ -1,5 +1,6 @@
 package net.groenholdt.wakelog;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -16,6 +17,7 @@ public class AboutDialogFragment extends DialogFragment
     private static final String TAG = "AddDeviceDialogFragment";
     private static TextView versionLabel;
 
+    @SuppressLint("InflateParams")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)

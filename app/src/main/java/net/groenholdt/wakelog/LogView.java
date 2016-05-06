@@ -1,6 +1,5 @@
 package net.groenholdt.wakelog;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -21,15 +20,9 @@ import java.util.GregorianCalendar;
 class LogView implements SimpleCursorAdapter.ViewBinder
 {
     private static final String TAG = "LogView";
-    private final Context context;
     private int day;
     private int month;
     private int year;
-
-    public LogView(Context context)
-    {
-        this.context = context;
-    }
 
     @Override
     public boolean setViewValue(View view, Cursor cursor, int columnIndex)
@@ -47,8 +40,12 @@ class LogView implements SimpleCursorAdapter.ViewBinder
                 {
                     Log.d(TAG, "Time: " +
                                DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
-                    ((TextView) view).setText(
-                            DateFormat.getDateTimeInstance().format(new java.util.Date(time)));
+                    ((TextView) view)
+                            .setText(String.format(view.getContext().getString(R.string.atText),
+                                                   DateFormat.getDateInstance(DateFormat.LONG)
+                                                             .format(new java.util.Date(time)),
+                                                   DateFormat.getTimeInstance(DateFormat.MEDIUM)
+                                                             .format(new java.util.Date(time))));
                 }
                 else
                 {
@@ -66,7 +63,7 @@ class LogView implements SimpleCursorAdapter.ViewBinder
                     Log.d(TAG, "Current time: " + DateFormat.getDateTimeInstance().format(
                             lastTime.getTime()));
                     ((LinearLayout) view.getParent()).setBackgroundColor(
-                            ContextCompat.getColor(view.getContext(), R.color.colorPrimary));
+                            ContextCompat.getColor(view.getContext(), R.color.colorYear));
                     year = lastTime.get(Calendar.YEAR);
                     month = lastTime.get(Calendar.MONTH);
                     day = lastTime.get(Calendar.DAY_OF_MONTH);
@@ -81,7 +78,7 @@ class LogView implements SimpleCursorAdapter.ViewBinder
                     Log.d(TAG, "Current time: " + DateFormat.getDateTimeInstance().format(
                             lastTime.getTime()));
                     ((LinearLayout) view.getParent()).setBackgroundColor(
-                            ContextCompat.getColor(view.getContext(), R.color.colorPrimary));
+                            ContextCompat.getColor(view.getContext(), R.color.colorMonth));
                     month = lastTime.get(Calendar.MONTH);
                     day = lastTime.get(Calendar.DAY_OF_MONTH);
                     Log.d(TAG, "Month: " + month);
@@ -95,7 +92,7 @@ class LogView implements SimpleCursorAdapter.ViewBinder
                     Log.d(TAG, "Current time: " + DateFormat.getDateTimeInstance().format(
                             lastTime.getTime()));
                     ((LinearLayout) view.getParent()).setBackgroundColor(
-                            ContextCompat.getColor(view.getContext(), R.color.colorPrimary));
+                            ContextCompat.getColor(view.getContext(), R.color.colorDay));
                     day = lastTime.get(Calendar.DAY_OF_MONTH);
                     Log.d(TAG, "Day: " + day);
                     return true;

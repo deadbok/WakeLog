@@ -13,4 +13,5 @@
     <string name="version_default">0.0.0</string>
     <string name="invalid">Ugyldig</string>
     <string name="credits">Autobahn|Android: http://autobahn.ws/android/</string>
+    <string name="atText">%1$s kl. %2$s</string>
 </resources>

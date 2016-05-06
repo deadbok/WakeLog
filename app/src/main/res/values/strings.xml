@@ -17,4 +17,5 @@
     <string name="title_dialog_about">About</string>
     <string name="invalid">Invalid</string>
     <string name="credits">\n\nUses these libraries:\n * Autobahn|Android: http://autobahn.ws/android/</string>
+    <string name="atText">%1$s at %2$s</string>
 </resources>

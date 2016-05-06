@@ -126,7 +126,7 @@ public class LogActivity extends AppCompatActivity
                                              new int[]{R.id.log_time, R.id.log_type},
                                              0);
 
-        logAdapter.setViewBinder(new LogView(this));
+        logAdapter.setViewBinder(new LogView());
 
         ListView listView = (ListView) findViewById(R.id.logView);
         if (listView == null)

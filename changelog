@@ -1,5 +1,8 @@
 05-06-2016 Martin Grønholdt
 
+ * Better date and time formatting.
+ * Added colors for log entry highlights.
+ * Suppress warnings about null in inflate parameters.
  * Log entry highlight by year, month, and day.
 
 05-04-2016 Martin Grønholdt
