@@ -169,6 +169,12 @@ public class MainActivity extends AppCompatActivity
                         .show(getSupportFragmentManager(), "about");
 
                 return true;
+            case R.id.action_settings:
+                Intent intent =
+                        new Intent(MainActivity.this, SettingsActivity.class);
+                Log.d(TAG, "Starting settings activity.");
+                startActivity(intent);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
