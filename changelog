@@ -1,3 +1,9 @@
+05-07-2016 Martin Grønholdt
+
+ * Settings used in application.
+ * No longer exporting the ContentProvider.
+ * Settings UI.
+
 05-06-2016 Martin Grønholdt
 
  * Better date and time formatting.

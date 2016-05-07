@@ -35,7 +35,7 @@
             android:name=".model.LogDatabaseProvider"
             android:authorities="net.groenholdt.wakelog.provider"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
         </provider>
 
         <activity

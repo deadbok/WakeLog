@@ -1,5 +1,6 @@
 package net.groenholdt.wakelog;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -20,9 +21,15 @@ import java.util.GregorianCalendar;
 class LogView implements SimpleCursorAdapter.ViewBinder
 {
     private static final String TAG = "LogView";
+    private static SharedPreferences prefs;
     private int day;
     private int month;
     private int year;
+
+    public LogView(SharedPreferences prefs)
+    {
+        LogView.prefs = prefs;
+    }
 
     @Override
     public boolean setViewValue(View view, Cursor cursor, int columnIndex)
@@ -56,7 +63,9 @@ class LogView implements SimpleCursorAdapter.ViewBinder
                 Calendar lastTime = GregorianCalendar.getInstance();
                 lastTime.setTimeInMillis(time);
 
-                if (year != lastTime.get(Calendar.YEAR))
+                //Code that highlights entries in the list.
+                if ((year != lastTime.get(Calendar.YEAR)) &&
+                    (prefs.getBoolean("year_highlight", true)))
                 {
                     Log.d(TAG, "Highlighting next year.");
                     Log.d(TAG, "Year: " + year);
@@ -71,7 +80,8 @@ class LogView implements SimpleCursorAdapter.ViewBinder
                     return true;
                 }
 
-                if (month != lastTime.get(Calendar.MONTH))
+                if ((month != lastTime.get(Calendar.MONTH)) &&
+                    (prefs.getBoolean("month_highlight", true)))
                 {
                     Log.d(TAG, "Highlighting next month.");
                     Log.d(TAG, "Month: " + month);
@@ -85,7 +95,8 @@ class LogView implements SimpleCursorAdapter.ViewBinder
                     return true;
                 }
 
-                if (day != lastTime.get(Calendar.DAY_OF_MONTH))
+                if ((day != lastTime.get(Calendar.DAY_OF_MONTH)) &&
+                    (prefs.getBoolean("day_highlight", true)))
                 {
                     Log.d(TAG, "Highlighting next day.");
                     Log.d(TAG, "Day: " + day);

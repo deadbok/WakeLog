@@ -14,4 +14,13 @@
     <string name="invalid">Ugyldig</string>
     <string name="credits">Autobahn|Android: http://autobahn.ws/android/</string>
     <string name="atText">%1$s kl. %2$s</string>
+    <string name="pref_description_day_highlight">Fremhæv log ved ny dag</string>
+    <string name="pref_description_month_highlight">Fremhæv log ved ny måned</string>
+    <string name="pref_description_year_highlight">Fremhæv log ved nyt år</string>
+    <string name="pref_highlight_appearance">Udseende</string>
+    <string name="pref_message_timeout">Sekunder før synkroniserings forsøg opgives</string>
+    <string name="pref_title_day_color">Dag farve</string>
+    <string name="pref_title_day_highlight">Fremhæv ny dag</string>
+    <string name="pref_title_month_color">Måned farve</string>
+    <string name="title_activity_settings">Indstillinger</string>
 </resources>

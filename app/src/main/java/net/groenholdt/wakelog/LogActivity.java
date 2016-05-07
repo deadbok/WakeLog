@@ -3,11 +3,13 @@ package net.groenholdt.wakelog;
 import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -126,7 +128,7 @@ public class LogActivity extends AppCompatActivity
                                              new int[]{R.id.log_time, R.id.log_type},
                                              0);
 
-        logAdapter.setViewBinder(new LogView());
+        logAdapter.setViewBinder(new LogView(PreferenceManager.getDefaultSharedPreferences(this)));
 
         ListView listView = (ListView) findViewById(R.id.logView);
         if (listView == null)
@@ -138,7 +140,9 @@ public class LogActivity extends AppCompatActivity
         listView.setAdapter(logAdapter);
 
         //Count down to connection timeout.
-        timeoutTimer = new CountDownTimer(10000, 1000)
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        timeoutTimer =
+                new CountDownTimer(Long.parseLong(prefs.getString("timeout", "10")) * 1000, 1000)
         {
 
             public void onTick(long millisUntilFinished)

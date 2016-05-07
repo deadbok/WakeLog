@@ -59,32 +59,38 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         super.onCreate(savedInstanceState);
         setupActionBar();
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        listener = new Preference.OnPreferenceChangeListener()
+        if (prefs == null)
         {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object value)
+            prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        }
+
+        if (listener == null)
+        {
+            listener = new Preference.OnPreferenceChangeListener()
             {
-                String stringValue = value.toString();
-
-                Log.d(TAG, "Preference " + preference.getKey() + "changed.");
-
-                if (preference instanceof EditTextPreference)
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object value)
                 {
-                    // Set the summary to reflect the new value.
-                    preference.setSummary(String.format(
-                            getString(R.string.pref_title_timeout_value), stringValue));
+                    String stringValue = value.toString();
+
+                    Log.d(TAG, "Preference " + preference.getKey() + "changed.");
+
+                    if (preference instanceof EditTextPreference)
+                    {
+                        // Set the summary to reflect the new value.
+                        preference.setSummary(String.format(
+                                getString(R.string.pref_title_timeout_value), stringValue));
+                    }
+                    else
+                    {
+                        // For all other preferences, set the summary to the value's
+                        // simple string representation.
+                        preference.setSummary(stringValue);
+                    }
+                    return true;
                 }
-                else
-                {
-                    // For all other preferences, set the summary to the value's
-                    // simple string representation.
-                    preference.setSummary(stringValue);
-                }
-                return true;
-            }
-        };
+            };
+        }
     }
 
     /**
